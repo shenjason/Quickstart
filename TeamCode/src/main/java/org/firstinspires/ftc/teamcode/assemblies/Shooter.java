@@ -9,24 +9,26 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
+import com.sun.tools.javac.util.List;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.util.Assembly;
 import org.firstinspires.ftc.teamcode.util.PIDcontroller;
+import org.firstinspires.ftc.teamcode.util.Sequencer;
 
 public class Shooter extends Assembly {
-    public double flywheelP = 2, flyWheelI = 0.005, flyWheelD = 1, TagSize = 0;
+    public double flywheelP = 2, flyWheelI = 0.005, flyWheelD = 1;
     public double turret_yawP = 2, turret_yawI = 0.005, turret_yawD = 0;
-    final int SAMPLE_T = 100, TARGET_CENTER_X = 0;
+    final int SAMPLE_T = 100, TARGET_CENTER_X = 0, TARGET_CENTER_CLEARANCE = 20;
+
+    final double PITCH_MIN_POS = 0.8, PITCH_MAX_POS = 0;
+    final double TOP_GATE_IN_POS = 0, TOP_GATE_OUT_POS = 1;
+    final double BOTTOM_OPEN_GATE_POS = 0, BOTTOM_CLOSE_GATE_POS = 0.8;
 
 
-    public final static int PGP = 1;
-    public final static int GPP = 0;
-    public final static int PPG = 2;
-    final int BLUE_TARGET_LINE = 3;
-    final int RED_TARGET_LINE = 4;
+    public final static int GPP = 0, PGP = 1, PPG = 2, BLUE_TARGET_LINE = 3, RED_TARGET_LINE = 4;
 
-    DcMotor flywheelMotor, bootkickerMotor, spinnerMotor;
+    DcMotor flywheelMotor, bootkickerMotor, spinnerMotor, turretYawEncoder;
     CRServo turretYawServo;
     Servo turretPitchServo, gateServo, bootkickerServo;
 
@@ -37,8 +39,11 @@ public class Shooter extends Assembly {
     Timer flywheelRPMSampleTimer;
 
     double flywheelRPM, prevFlyWheelPos, targetFlyWheelRPM;
+    public double TagSize = 0;
 
     public PIDcontroller flywheelPID, turret_yawPID;
+
+    public Sequencer shooterSequence;
 
 
     public Shooter(HardwareMap _hardwareMap, Telemetry _t, boolean _debug, boolean _side) {
@@ -57,6 +62,12 @@ public class Shooter extends Assembly {
         spinnerMotor = hardwareMap.get(DcMotor.class, "spinnermotor");
         outtakeColorSensor = hardwareMap.get(ColorSensor.class, "outakesensor");
 
+        turretYawEncoder = bootkickerMotor;
+
+        turretYawEncoder.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+
+//        turretYawServo.setDirection(DcMotorSimple.Direction.REVERSE);
+
 
 
         flywheelMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
@@ -71,6 +82,27 @@ public class Shooter extends Assembly {
         limelight.start();
 
         flywheelRPMSampleTimer = new Timer();
+
+
+
+
+        shooterSequence = new Sequencer(List.of(
+                this::TopGateIN,
+                this::openBottomGate,
+                this::TopGateOUT,
+                this::closeBottomGate,
+                this::TopGateIN
+        ), List.of(
+                0d, 0d, 0.3d, 0d, 0.4d
+        ), List.of(
+                Sequencer.defaultCondition(),
+                Sequencer.defaultCondition(),
+                Sequencer.defaultCondition(),
+                Sequencer.defaultCondition(),
+                Sequencer.defaultCondition()
+
+        ));
+
     }
 
     void calcFlyWheelRPM(){
@@ -123,23 +155,39 @@ public class Shooter extends Assembly {
         return Math.abs(targetFlyWheelRPM-flywheelRPM) < 150;
     }
 
+    public void setPitch(double pitchAngle){
+        if (pitchAngle < 45 || pitchAngle > 60) return;
+        double perc = (pitchAngle - 45d) / 15d;
+        turretPitchServo.setPosition(PITCH_MIN_POS +  (PITCH_MAX_POS - PITCH_MIN_POS) * perc);
+    }
+
 
     void autoTargeting(){
         if (side) limelight.pipelineSwitch(BLUE_TARGET_LINE);
         else limelight.pipelineSwitch(RED_TARGET_LINE);
 
         LLResult result = limelight.getLatestResult();
+        double offset = turretYawEncoder.getCurrentPosition();
         if (limelightResultVaild(result)){
             TagSize = result.getTa();
             debugAddData("targetTagSize", TagSize);
             debugAddData("targetOffsetX", result.getTx());
 
 
+             offset = result.getTx() - TARGET_CENTER_X;
+        }
 
-
+        if (Math.abs(offset) > TARGET_CENTER_CLEARANCE){
+            turretYawServo.setPower((offset < 0)? -1 : 1);
         }
 
     }
+
+
+    public void openBottomGate(){ gateServo.setPosition(BOTTOM_OPEN_GATE_POS);}
+    public void closeBottomGate(){ gateServo.setPosition(BOTTOM_CLOSE_GATE_POS);}
+    public void TopGateIN(){ bootkickerServo.setPosition(TOP_GATE_IN_POS);}
+    public void TopGateOUT(){ bootkickerServo.setPosition(TOP_GATE_OUT_POS);}
 
 
     @Override
@@ -149,6 +197,8 @@ public class Shooter extends Assembly {
         debugAddData("RPMError", flywheelPID.getE());
         debugAddData("flywheelPowerOutput", flywheelPID.currentOutput);
         autoTargeting();
+
+        shooterSequence.update();
     }
 
 }
