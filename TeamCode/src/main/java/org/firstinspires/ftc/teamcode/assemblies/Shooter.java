@@ -18,12 +18,14 @@ import org.firstinspires.ftc.teamcode.util.Sequencer;
 
 public class Shooter extends Assembly {
     public double flywheelP = 2, flyWheelI = 0.005, flyWheelD = 1;
-    public double turret_yawP = 2, turret_yawI = 0.005, turret_yawD = 0;
-    final int SAMPLE_T = 100, TARGET_CENTER_X = 0, TARGET_CENTER_CLEARANCE = 20;
+    public double turret_yawP = 0.05d;
 
+    final int SAMPLE_T = 100;
+
+    final double TARGET_CENTER_X = 0, TARGET_CENTER_CLEARANCE = 3d;
     final double PITCH_MIN_POS = 0.8, PITCH_MAX_POS = 0;
-    final double TOP_GATE_IN_POS = 0, TOP_GATE_OUT_POS = 1;
-    final double BOTTOM_OPEN_GATE_POS = 0, BOTTOM_CLOSE_GATE_POS = 0.8;
+    final double TOP_GATE_IN_POS = 0.5, TOP_GATE_OUT_POS = 0.7;
+    final double BOTTOM_OPEN_GATE_POS = 0.65, BOTTOM_CLOSE_GATE_POS = 0.9;
 
 
     public final static int GPP = 0, PGP = 1, PPG = 2, BLUE_TARGET_LINE = 3, RED_TARGET_LINE = 4;
@@ -41,9 +43,11 @@ public class Shooter extends Assembly {
     double flywheelRPM, prevFlyWheelPos, targetFlyWheelRPM;
     public double TagSize = 0;
 
-    public PIDcontroller flywheelPID, turret_yawPID;
+    public PIDcontroller flywheelPID;
 
-    public Sequencer shooterSequence;
+    public Sequencer shooterSequence, fireBallSequence;
+
+    int spinnerPos;
 
 
     public Shooter(HardwareMap _hardwareMap, Telemetry _t, boolean _debug, boolean _side) {
@@ -56,8 +60,8 @@ public class Shooter extends Assembly {
         bootkickerMotor = hardwareMap.get(DcMotor.class, "intakemotor");
         turretYawServo = hardwareMap.get(CRServo.class, "yawservo");
         turretPitchServo = hardwareMap.get(Servo.class, "pitchservo");
-        bootkickerServo = hardwareMap.get(Servo.class, "topgateservo");
-        gateServo = hardwareMap.get(Servo.class, "bottomgateservo");
+        bootkickerServo = hardwareMap.get(Servo.class, "topgate");
+        gateServo = hardwareMap.get(Servo.class, "bottomgate");
         limelight = hardwareMap.get(Limelight3A.class, "limelight");
         spinnerMotor = hardwareMap.get(DcMotor.class, "spinnermotor");
         outtakeColorSensor = hardwareMap.get(ColorSensor.class, "outakesensor");
@@ -66,7 +70,9 @@ public class Shooter extends Assembly {
 
         turretYawEncoder.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
-//        turretYawServo.setDirection(DcMotorSimple.Direction.REVERSE);
+        turretYawServo.setDirection(DcMotorSimple.Direction.REVERSE);
+
+
 
 
 
@@ -75,7 +81,6 @@ public class Shooter extends Assembly {
         flywheelMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
 
         flywheelPID = new PIDcontroller(flywheelP, flyWheelI, flyWheelD, 0, 1);
-        turret_yawPID = new PIDcontroller(turret_yawP, turret_yawI, turret_yawD,  -1, 1);
 
         limelight.setPollRateHz(30);
 
@@ -84,23 +89,43 @@ public class Shooter extends Assembly {
         flywheelRPMSampleTimer = new Timer();
 
 
-
+        TopGateIN();
+        closeBottomGate();
 
         shooterSequence = new Sequencer(List.of(
+                this::BootkickerON,
                 this::TopGateIN,
                 this::openBottomGate,
                 this::TopGateOUT,
                 this::closeBottomGate,
-                this::TopGateIN
+                this::TopGateIN,
+                this::BootkickerOFF
         ), List.of(
-                0d, 0d, 0.3d, 0d, 0.4d
+                0d, 0d, 0d, 0.1d, 0.1d, 0.2d, 0.2d
         ), List.of(
                 Sequencer.defaultCondition(),
                 Sequencer.defaultCondition(),
+                Sequencer.defaultCondition(),
+                () -> !isBall(),
                 Sequencer.defaultCondition(),
                 Sequencer.defaultCondition(),
                 Sequencer.defaultCondition()
 
+        ));
+
+
+        fireBallSequence = new Sequencer(List.of(
+                this::spinnerMovingMode,
+                this::spinnerMove,
+                () -> shooterSequence.start(),
+                this::spinnerCycleMode
+        ), List.of(
+                0d, 0d, 3d, 0d
+        ),List.of(
+                Sequencer.defaultCondition(),
+                Sequencer.defaultCondition(),
+                this::isBall,
+                Sequencer.defaultCondition()
         ));
 
     }
@@ -119,7 +144,6 @@ public class Shooter extends Assembly {
 
         flywheelMotor.setPower(flywheelPID.step(targetFlyWheelRPM / 6000d, flywheelRPM / 6000d));
     }
-
 
     public LLResult limelightGetResult(int pipeline_index) {
         limelight.pipelineSwitch(pipeline_index);
@@ -167,18 +191,21 @@ public class Shooter extends Assembly {
         else limelight.pipelineSwitch(RED_TARGET_LINE);
 
         LLResult result = limelight.getLatestResult();
-        double offset = turretYawEncoder.getCurrentPosition();
+        double offset = 0;
         if (limelightResultVaild(result)){
             TagSize = result.getTa();
             debugAddData("targetTagSize", TagSize);
-            debugAddData("targetOffsetX", result.getTx());
+            debugAddData("targetOffsetX", result.getTx() - TARGET_CENTER_X);
 
 
              offset = result.getTx() - TARGET_CENTER_X;
         }
 
         if (Math.abs(offset) > TARGET_CENTER_CLEARANCE){
-            turretYawServo.setPower((offset < 0)? -1 : 1);
+            turretYawServo.setPower(offset * turret_yawP);
+            debugAddLine("Adjusting...");
+        }else{
+            turretYawServo.setPower(0);
         }
 
     }
@@ -189,6 +216,51 @@ public class Shooter extends Assembly {
     public void TopGateIN(){ bootkickerServo.setPosition(TOP_GATE_IN_POS);}
     public void TopGateOUT(){ bootkickerServo.setPosition(TOP_GATE_OUT_POS);}
 
+    public void BootkickerON(){ bootkickerMotor.setPower(1);}
+    public void BootkickerOFF(){ bootkickerMotor.setPower(0);}
+
+    public boolean isGreen(){
+        return (outtakeColorSensor.green() > 140);
+    }
+
+    public boolean isPurple(){
+        return (outtakeColorSensor.blue() > 130 && outtakeColorSensor.red() > 100);
+    }
+
+    public boolean isBall(){
+        return (isGreen() || isPurple());
+    }
+
+    public void spinnerMove(){
+        spinnerMotor.setPower(0.2);
+    }
+
+    public void spinnerStop(){
+        spinnerMotor.setPower(0);
+    }
+
+    public void spinnerMovingMode(){
+        spinnerMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        spinnerMotor.setPower(0);
+    }
+
+    public void spinnerCycleMode(){
+        spinnerMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        updateSpinnerPos();
+        spinnerMotor.setPower(1);
+        spinnerMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        spinnerPos = 0;
+    }
+
+    public void cycleSpinner(){
+        spinnerPos ++;
+        updateSpinnerPos();
+    }
+
+    public void updateSpinnerPos(){
+        spinnerMotor.setTargetPosition((int)(spinnerPos * 3 * 141.1d));
+    }
+
 
     @Override
     public void update() {
@@ -196,9 +268,14 @@ public class Shooter extends Assembly {
         debugAddData("flyWheelRPM", flywheelRPM);
         debugAddData("RPMError", flywheelPID.getE());
         debugAddData("flywheelPowerOutput", flywheelPID.currentOutput);
+        debugAddData("outtakeColorR", outtakeColorSensor.red());
+        debugAddData("outtakeColorG", outtakeColorSensor.green());
+        debugAddData("outtakeColorB", outtakeColorSensor.blue());
+        debugAddData("outtakeBall", isBall());
         autoTargeting();
 
         shooterSequence.update();
+        fireBallSequence.update();
     }
 
 }

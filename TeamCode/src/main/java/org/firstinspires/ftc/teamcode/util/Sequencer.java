@@ -22,6 +22,7 @@ public class Sequencer {
         this.actions = actions;
         this.timings = timings;
         this.conditions = new ArrayList<>();
+        timer = new Timer();
 
 
         for (int i=0; i<actions.size(); i++){
@@ -35,6 +36,7 @@ public class Sequencer {
         this.actions = actions;
         this.conditions = conditions;
         this.timings = timings;
+        timer = new Timer();
 
         reset();
     }
