@@ -30,7 +30,7 @@ public class Shooter extends Assembly {
 
     public final static int GPP = 0, PGP = 1, PPG = 2, BLUE_TARGET_LINE = 3, RED_TARGET_LINE = 4;
 
-    DcMotor flywheelMotor, bootkickerMotor, spinnerMotor, turretYawEncoder;
+    DcMotor flywheelMotor, bootkickerMotor, turretYawEncoder;
     CRServo turretYawServo;
     Servo turretPitchServo, gateServo, bootkickerServo;
 
@@ -47,8 +47,6 @@ public class Shooter extends Assembly {
 
     public Sequencer shooterSequence, fireBallSequence;
 
-    int spinnerPos;
-
 
     public Shooter(HardwareMap _hardwareMap, Telemetry _t, boolean _debug, boolean _side) {
         super(_hardwareMap, _t, _debug, _side);
@@ -63,7 +61,6 @@ public class Shooter extends Assembly {
         bootkickerServo = hardwareMap.get(Servo.class, "topgate");
         gateServo = hardwareMap.get(Servo.class, "bottomgate");
         limelight = hardwareMap.get(Limelight3A.class, "limelight");
-        spinnerMotor = hardwareMap.get(DcMotor.class, "spinnermotor");
         outtakeColorSensor = hardwareMap.get(ColorSensor.class, "outakesensor");
 
         turretYawEncoder = bootkickerMotor;
@@ -111,21 +108,6 @@ public class Shooter extends Assembly {
                 Sequencer.defaultCondition(),
                 Sequencer.defaultCondition()
 
-        ));
-
-
-        fireBallSequence = new Sequencer(List.of(
-                this::spinnerMovingMode,
-                this::spinnerMove,
-                () -> shooterSequence.start(),
-                this::spinnerCycleMode
-        ), List.of(
-                0d, 0d, 3d, 0d
-        ),List.of(
-                Sequencer.defaultCondition(),
-                Sequencer.defaultCondition(),
-                this::isBall,
-                Sequencer.defaultCondition()
         ));
 
     }
@@ -195,10 +177,12 @@ public class Shooter extends Assembly {
         if (limelightResultVaild(result)){
             TagSize = result.getTa();
             debugAddData("targetTagSize", TagSize);
-            debugAddData("targetOffsetX", result.getTx() - TARGET_CENTER_X);
 
+            offset = result.getTx() - TARGET_CENTER_X;
+            debugAddData("targetOffsetX", offset);
 
-             offset = result.getTx() - TARGET_CENTER_X;
+            debugAddData("targetOffsetABS", Math.abs(offset));
+
         }
 
         if (Math.abs(offset) > TARGET_CENTER_CLEARANCE){
@@ -220,46 +204,23 @@ public class Shooter extends Assembly {
     public void BootkickerOFF(){ bootkickerMotor.setPower(0);}
 
     public boolean isGreen(){
-        return (outtakeColorSensor.green() > 140);
+        return (outtakeColorSensor.green() > 120);
     }
 
     public boolean isPurple(){
-        return (outtakeColorSensor.blue() > 130 && outtakeColorSensor.red() > 100);
+        return (outtakeColorSensor.blue() > 110 && outtakeColorSensor.red() > 80);
     }
 
     public boolean isBall(){
         return (isGreen() || isPurple());
     }
 
-    public void spinnerMove(){
-        spinnerMotor.setPower(0.2);
+
+    public void autoAdjustShooterParameters(){
+        setFlywheelRPM(4000);
+        setPitch(60);
     }
 
-    public void spinnerStop(){
-        spinnerMotor.setPower(0);
-    }
-
-    public void spinnerMovingMode(){
-        spinnerMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        spinnerMotor.setPower(0);
-    }
-
-    public void spinnerCycleMode(){
-        spinnerMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        updateSpinnerPos();
-        spinnerMotor.setPower(1);
-        spinnerMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        spinnerPos = 0;
-    }
-
-    public void cycleSpinner(){
-        spinnerPos ++;
-        updateSpinnerPos();
-    }
-
-    public void updateSpinnerPos(){
-        spinnerMotor.setTargetPosition((int)(spinnerPos * 3 * 141.1d));
-    }
 
 
     @Override

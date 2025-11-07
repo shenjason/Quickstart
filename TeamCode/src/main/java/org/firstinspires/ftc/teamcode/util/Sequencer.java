@@ -60,6 +60,9 @@ public class Sequencer {
     public static Condition defaultCondition(){
         return () -> false;
     }
+    public static Action noneAction() {return Sequencer::none; }
+
+    static void none() {}
     public void reset(){
         currentIndex = -1;
         timer.resetTimer();

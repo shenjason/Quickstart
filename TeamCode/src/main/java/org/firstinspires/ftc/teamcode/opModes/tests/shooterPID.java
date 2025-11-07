@@ -20,6 +20,8 @@ public class shooterPID extends OpMode {
     public static double P, I, D, TARGET_RPM;
 
     public static double yawP = 0.05d;
+
+    public static double pitch = 60;
     Shooter s;
 
 
@@ -37,6 +39,13 @@ public class shooterPID extends OpMode {
         s.flywheelP = P; s.flyWheelD = D; s.flyWheelI = I;
         s.turret_yawP = yawP;
         s.setFlywheelRPM(TARGET_RPM);
+
+        s.setPitch(pitch);
+//
+//        if (gamepad1.aWasPressed()){
+//            s.fireBallSequence.start();
+//        }
+
         s.update();
 
 
@@ -47,11 +56,6 @@ public class shooterPID extends OpMode {
 
         telemetryManager.update(telemetry);
 
-
-
-        if (gamepad1.aWasPressed()){
-            s.fireBallSequence.start();
-        }
 
         telemetry.update();
     }
