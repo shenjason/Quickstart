@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode.assemblies;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DistanceSensor;
 import com.qualcomm.robotcore.hardware.HardwareMap;
+import com.qualcomm.robotcore.hardware.TouchSensor;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
@@ -14,9 +15,13 @@ import org.firstinspires.ftc.teamcode.util.Assembly;
 public class Spinner extends Assembly {
 
     DcMotor spinnerMotor;
-    DistanceSensor distanceSensor;
+    TouchSensor magSwitch;
 
     ActionPress resetPress;
+
+    public double cyclePos = 0;
+
+    public double cyclePosOffset = 0;
 
 
 
@@ -25,12 +30,11 @@ public class Spinner extends Assembly {
 
         resetPress = new ActionPress(this::resetEncoder);
     }
-
     public void spinnerMove(){
-        spinnerMotor.setPower(0.3);
+        spinnerMotor.setPower(0.5);
     }
 
-    public void spinnerReverseMove(){ spinnerMotor.setPower(-0.3); }
+    public void spinnerReverseMove(){ spinnerMotor.setPower(-0.5); }
     public void spinnerStop() { spinnerMotor.setPower(0);}
 
     public void spinnerMovingMode(){
@@ -46,28 +50,47 @@ public class Spinner extends Assembly {
     }
 
     public void cycleSpinner(){
-        spinnerMotor.setTargetPosition((int)(3 * 141.1d + 30));
+        cyclePos ++;
+        updateCyclePos();
+    }
+
+    public void updateCyclePos(){
+        spinnerMotor.setTargetPosition((int)(3 * 141.1d * cyclePos) + ((cyclePos > 2.5)? 30 : 0));
+    }
+
+    public void intakeCycle(){
+        cyclePosOffset = 0;
+        cyclePos = Math.floor(cyclePos);
+        updateCyclePos();
+    }
+
+    public void outtakeCycle(){
+        cyclePosOffset = 0.5;
+        cyclePos += cyclePosOffset;
+        updateCyclePos();
     }
 
 
     @Override
     public void hardwareInit() {
         spinnerMotor = hardwareMap.get(DcMotor.class, "spinnermotor");
-        distanceSensor = hardwareMap.get(DistanceSensor.class, "intakesensor");
+        magSwitch = hardwareMap.get(TouchSensor.class, "Touch sensor");
 
         spinnerCycleMode();
     }
 
     void resetEncoder(){
         spinnerMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        spinnerMotor.setTargetPosition(0);
         spinnerMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        cyclePos = cyclePosOffset;
+        updateCyclePos();
     }
 
     @Override
     public void update() {
-
-        debugAddData("Distance", distanceSensor.getDistance(DistanceUnit.MM));
-        resetPress.update(distanceSensor.getDistance(DistanceUnit.MM) > 80 && distanceSensor.getDistance(DistanceUnit.MM) < 100);
+        resetPress.update(magSwitch.isPressed());
+        debugAddData("CyclePos", cyclePos);
+        debugAddData("magSwitchState", magSwitch.isPressed());
+        debugAddData("CyclePosOffset", cyclePosOffset);
     }
 }

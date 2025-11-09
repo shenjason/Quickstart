@@ -22,5 +22,14 @@ public class spinnerTest extends OpMode {
             spinner.cycleSpinner();
         }
         spinner.update();
+        telemetry.update();
+
+
+        if (gamepad1.bWasPressed()){
+            spinner.intakeCycle();
+        }
+        if (gamepad1.yWasPressed()){
+            spinner.outtakeCycle();
+        }
     }
 }
