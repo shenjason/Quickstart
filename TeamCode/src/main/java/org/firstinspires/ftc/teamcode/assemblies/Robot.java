@@ -27,6 +27,8 @@ public class Robot extends Assembly {
 
 
         fireballAllSequence = new Sequencer(List.of(
+                () -> spinner.outtakeCycle(),
+                () -> shooter.autoAdjustShooterParameters(),
                 () -> spinner.cycleSpinner(),
                 () -> shooter.shooterSequence.start(),
                 () -> spinner.cycleSpinner(),
@@ -34,11 +36,22 @@ public class Robot extends Assembly {
                 () -> spinner.cycleSpinner(),
                 () -> shooter.shooterSequence.start()
         ), List.of(
-                0d, 0.5d,
+                0d, 0d, 5d, 0.5d, 0d, 0.5d, 0d, 0.5d
         ), List.of(
+                Sequencer.defaultCondition(),
+                Sequencer.defaultCondition(),
+                () -> shooter.atTargetFlywheelRPM(),
+                () -> shooter.isBall(),
+                Sequencer.defaultCondition(),
+                () -> shooter.isBall(),
                 Sequencer.defaultCondition(),
                 () -> shooter.isBall()
         ));
+    }
+
+
+    public void fireAllBalls(){
+        fireballAllSequence.start();
     }
 
     @Override
