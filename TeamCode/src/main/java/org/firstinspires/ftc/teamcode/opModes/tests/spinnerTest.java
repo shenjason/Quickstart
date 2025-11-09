@@ -8,7 +8,7 @@ import org.firstinspires.ftc.teamcode.assemblies.Spinner;
 import org.firstinspires.ftc.teamcode.util.Assembly;
 
 @Configurable
-@TeleOp(name="ShooterPID", group = "Tests")
+@TeleOp(name="SpinnerTest", group = "Tests")
 public class spinnerTest extends OpMode {
     Spinner spinner;
     @Override

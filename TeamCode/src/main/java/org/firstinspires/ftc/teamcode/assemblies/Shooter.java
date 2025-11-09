@@ -23,7 +23,7 @@ public class Shooter extends Assembly {
     final int SAMPLE_T = 100;
 
     final double TARGET_CENTER_X = 0, TARGET_CENTER_CLEARANCE = 3d;
-    final double PITCH_MIN_POS = 0.8, PITCH_MAX_POS = 0;
+    final double PITCH_MIN_POS = 0.8, PITCH_MAX_POS = 0.1;
     final double TOP_GATE_IN_POS = 0.5, TOP_GATE_OUT_POS = 0.7;
     final double BOTTOM_OPEN_GATE_POS = 0.65, BOTTOM_CLOSE_GATE_POS = 0.9;
 
@@ -45,7 +45,7 @@ public class Shooter extends Assembly {
 
     public PIDcontroller flywheelPID;
 
-    public Sequencer shooterSequence, fireBallSequence;
+    public Sequencer shooterSequence;
 
 
     public Shooter(HardwareMap _hardwareMap, Telemetry _t, boolean _debug, boolean _side) {
@@ -62,6 +62,7 @@ public class Shooter extends Assembly {
         gateServo = hardwareMap.get(Servo.class, "bottomgate");
         limelight = hardwareMap.get(Limelight3A.class, "limelight");
         outtakeColorSensor = hardwareMap.get(ColorSensor.class, "outakesensor");
+
 
         turretYawEncoder = bootkickerMotor;
 
@@ -186,7 +187,7 @@ public class Shooter extends Assembly {
         }
 
         if (Math.abs(offset) > TARGET_CENTER_CLEARANCE){
-            turretYawServo.setPower(offset * turret_yawP);
+            turretYawServo.setPower(Math.max(Math.abs(offset) * turret_yawP, 0.1) * Math.signum(offset));
             debugAddLine("Adjusting...");
         }else{
             turretYawServo.setPower(0);
@@ -236,7 +237,6 @@ public class Shooter extends Assembly {
         autoTargeting();
 
         shooterSequence.update();
-        fireBallSequence.update();
     }
 
 }
