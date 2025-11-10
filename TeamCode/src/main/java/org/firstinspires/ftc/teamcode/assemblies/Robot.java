@@ -54,6 +54,14 @@ public class Robot extends Assembly {
         fireballAllSequence.start();
     }
 
+    public void intakeMode(){
+        spinner.intakeCycle();
+    }
+
+    public void setIntakeState(boolean state){
+
+    }
+
     @Override
     public void update() {
         debugAddLine("Shooter: ");

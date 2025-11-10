@@ -53,5 +53,7 @@ public class teleOpMain extends OpMode {
             robot.fireAllBalls();
         }
 
+        telemetry.update();
+
     }
 }

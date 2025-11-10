@@ -13,15 +13,20 @@ import org.firstinspires.ftc.teamcode.util.Assembly;
 
 
 public class Spinner extends Assembly {
-
-    DcMotor spinnerMotor;
+    public static final boolean INTAKE_MODE = false, OUTTAKE_MODE = true;
+    DcMotor spinnerMotor, intakeMotor;
     TouchSensor magSwitch;
+    DistanceSensor distanceSensor;
 
-    ActionPress resetPress;
+    ActionPress resetPress, intakeCycleBallPress;
 
     public double cyclePos = 0;
 
     public double cyclePosOffset = 0;
+
+    public boolean MODE = Spinner.INTAKE_MODE;
+
+    boolean intaking = false;
 
 
 
@@ -29,7 +34,17 @@ public class Spinner extends Assembly {
         super(_hardwareMap, _t, _debug, _side);
 
         resetPress = new ActionPress(this::resetEncoder);
+        intakeCycleBallPress = new ActionPress(this::cycleSpinner);
     }
+
+    public void resetSpinnerPos(){
+        spinnerMovingMode();
+        spinnerMove();
+        while (!magSwitch.isPressed()) {}
+        spinnerStop();
+        spinnerCycleMode();
+    }
+
     public void spinnerMove(){
         spinnerMotor.setPower(0.5);
     }
@@ -49,6 +64,10 @@ public class Spinner extends Assembly {
         spinnerMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
     }
 
+    public void setIntakingState(boolean state){
+        intaking = state;
+    }
+
     public void cycleSpinner(){
         cyclePos ++;
         updateCyclePos();
@@ -61,13 +80,20 @@ public class Spinner extends Assembly {
     public void intakeCycle(){
         cyclePosOffset = 0;
         cyclePos = Math.floor(cyclePos);
+        MODE = Spinner.INTAKE_MODE;
         updateCyclePos();
     }
 
     public void outtakeCycle(){
+        intakeMotor.setPower(0);
         cyclePosOffset = 0.5;
         cyclePos += cyclePosOffset;
+        MODE = Spinner.OUTTAKE_MODE;
         updateCyclePos();
+    }
+
+    public boolean isBall(){
+        return distanceSensor.getDistance(DistanceUnit.MM) < 30;
     }
 
 
@@ -76,7 +102,10 @@ public class Spinner extends Assembly {
         spinnerMotor = hardwareMap.get(DcMotor.class, "spinnermotor");
         magSwitch = hardwareMap.get(TouchSensor.class, "Touch sensor");
 
-        spinnerCycleMode();
+        distanceSensor = hardwareMap.get(DistanceSensor.class, "intakesensor");
+        intakeMotor = hardwareMap.get(DcMotor.class, "intakemotor");
+
+        resetSpinnerPos();
     }
 
     void resetEncoder(){
@@ -92,5 +121,12 @@ public class Spinner extends Assembly {
         debugAddData("CyclePos", cyclePos);
         debugAddData("magSwitchState", magSwitch.isPressed());
         debugAddData("CyclePosOffset", cyclePosOffset);
+        debugAddData("Distance", distanceSensor.getDistance(DistanceUnit.MM));
+
+        if (MODE == Spinner.INTAKE_MODE){
+            intakeMotor.setPower((intaking)? 1 : 0);
+
+            intakeCycleBallPress.update(isBall());
+        }
     }
 }
