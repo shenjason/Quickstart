@@ -93,7 +93,7 @@ public class Spinner extends Assembly {
     }
 
     public boolean isBall(){
-        return distanceSensor.getDistance(DistanceUnit.MM) < 30;
+        return distanceSensor.getDistance(DistanceUnit.MM) < 40;
     }
 
 
@@ -104,8 +104,6 @@ public class Spinner extends Assembly {
 
         distanceSensor = hardwareMap.get(DistanceSensor.class, "intakesensor");
         intakeMotor = hardwareMap.get(DcMotor.class, "intakemotor");
-
-        resetSpinnerPos();
     }
 
     void resetEncoder(){
@@ -121,10 +119,9 @@ public class Spinner extends Assembly {
         debugAddData("CyclePos", cyclePos);
         debugAddData("magSwitchState", magSwitch.isPressed());
         debugAddData("CyclePosOffset", cyclePosOffset);
-        debugAddData("Distance", distanceSensor.getDistance(DistanceUnit.MM));
 
         if (MODE == Spinner.INTAKE_MODE){
-            intakeMotor.setPower((intaking)? 1 : 0);
+            intakeMotor.setPower((intaking && !isBall())? 1 : 0);
 
             intakeCycleBallPress.update(isBall());
         }

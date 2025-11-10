@@ -25,8 +25,9 @@ public class teleOpMain extends OpMode {
     public void init() {
         follower = Constants.createFollower(hardwareMap);
         robot = new Robot(hardwareMap, telemetry, DEBUG, SIDE);
+        robot.start();
 
-        follower.update();
+        follower.updateDrivetrain();
     }
 
     @Override
@@ -36,22 +37,29 @@ public class teleOpMain extends OpMode {
 
     @Override
     public void loop() {
-        follower.updateDrivetrain();
+
         follower.update();
         robot.update();
 
 
+        double speed = (gamepad1.left_bumper || gamepad1.right_bumper) ? 1 : 0.3d;
         follower.setTeleOpDrive(
-                -gamepad1.left_stick_y,
-                -gamepad1.left_stick_x,
-                -gamepad1.right_stick_x,
+                -gamepad1.left_stick_y * speed,
+                -gamepad1.left_stick_x * speed,
+                -gamepad1.right_stick_x * speed,
                 true // Robot Centric
         );
 
 
-        if (gamepad1.aWasPressed()){
+        if (gamepad1.xWasPressed()){
             robot.fireAllBalls();
         }
+
+        if (gamepad1.bWasPressed()){
+            robot.intakeMode();
+        }
+
+        robot.setIntakeState(gamepad1.a);
 
         telemetry.update();
 

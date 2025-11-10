@@ -40,7 +40,7 @@ public class Shooter extends Assembly {
 
     Timer flywheelRPMSampleTimer;
 
-    double flywheelRPM, prevFlyWheelPos, targetFlyWheelRPM;
+    double flywheelRPM = 0, prevFlyWheelPos = 0, targetFlyWheelRPM = 0;
     public double TagSize = 0;
 
     public PIDcontroller flywheelPID;
@@ -220,6 +220,10 @@ public class Shooter extends Assembly {
     public void autoAdjustShooterParameters(){
         setFlywheelRPM(4000);
         setPitch(60);
+    }
+
+    public void offShooter(){
+        setFlywheelRPM(0);
     }
 
 

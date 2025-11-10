@@ -18,13 +18,9 @@ public class Robot extends Assembly {
 
     public Robot(HardwareMap _hardwareMap, Telemetry _t, boolean _debug, boolean _side) {
         super(_hardwareMap, _t, _debug, _side);
-    }
 
-    @Override
-    public void hardwareInit() {
-        shooter = new Shooter(hardwareMap, t, debug, side);
-        spinner = new Spinner(hardwareMap, t, debug, side);
-
+        shooter = new Shooter(_hardwareMap, _t, _debug, _side);
+        spinner = new Spinner(_hardwareMap, _t, _debug, _side);
 
         fireballAllSequence = new Sequencer(List.of(
                 () -> spinner.outtakeCycle(),
@@ -34,9 +30,10 @@ public class Robot extends Assembly {
                 () -> spinner.cycleSpinner(),
                 () -> shooter.shooterSequence.start(),
                 () -> spinner.cycleSpinner(),
-                () -> shooter.shooterSequence.start()
+                () -> shooter.shooterSequence.start(),
+                () -> shooter.offShooter()
         ), List.of(
-                0d, 0d, 5d, 0.5d, 0d, 0.5d, 0d, 0.5d
+                0d, 0d, 500d, 0.5d, 0d, 0.5d, 0d, 0.5d, 1d
         ), List.of(
                 Sequencer.defaultCondition(),
                 Sequencer.defaultCondition(),
@@ -45,9 +42,17 @@ public class Robot extends Assembly {
                 Sequencer.defaultCondition(),
                 () -> shooter.isBall(),
                 Sequencer.defaultCondition(),
-                () -> shooter.isBall()
+                () -> shooter.isBall(),
+                Sequencer.defaultCondition()
         ));
     }
+
+    public void start(){
+        spinner.resetSpinnerPos();
+    }
+
+    @Override
+    public void hardwareInit() { }
 
 
     public void fireAllBalls(){
@@ -59,15 +64,14 @@ public class Robot extends Assembly {
     }
 
     public void setIntakeState(boolean state){
-
+        spinner.setIntakingState(state);
     }
 
     @Override
     public void update() {
-        debugAddLine("Shooter: ");
-        shooter.update();
-        debugAddLine("Spinner: ");
+
         spinner.update();
+        shooter.update();
 
 
         fireballAllSequence.update();

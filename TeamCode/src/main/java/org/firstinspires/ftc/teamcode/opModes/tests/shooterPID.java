@@ -42,9 +42,9 @@ public class shooterPID extends OpMode {
 
         s.setPitch(pitch);
 //
-//        if (gamepad1.aWasPressed()){
-//            s.fireBallSequence.start();
-//        }
+        if (gamepad1.aWasPressed()){
+            s.shooterSequence.start();
+        }
 
         s.update();
 
