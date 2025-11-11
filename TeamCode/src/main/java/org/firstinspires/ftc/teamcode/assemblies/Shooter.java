@@ -99,12 +99,12 @@ public class Shooter extends Assembly {
                 this::TopGateIN,
                 this::BootkickerOFF
         ), List.of(
-                0d, 0d, 0d, 0.1d, 0.1d, 0.2d, 0.2d
+                0d, 0d, 0d, 0.15d, 0.1d, 0.2d, 0.2d
         ), List.of(
                 Sequencer.defaultCondition(),
                 Sequencer.defaultCondition(),
                 Sequencer.defaultCondition(),
-                () -> !isBall(),
+                Sequencer.defaultCondition(),
                 Sequencer.defaultCondition(),
                 Sequencer.defaultCondition(),
                 Sequencer.defaultCondition()
@@ -205,11 +205,11 @@ public class Shooter extends Assembly {
     public void BootkickerOFF(){ bootkickerMotor.setPower(0);}
 
     public boolean isGreen(){
-        return (outtakeColorSensor.green() > 120);
+        return (outtakeColorSensor.green() > 100);
     }
 
     public boolean isPurple(){
-        return (outtakeColorSensor.blue() > 110 && outtakeColorSensor.red() > 80);
+        return (outtakeColorSensor.blue() > 100 && outtakeColorSensor.red() > 80);
     }
 
     public boolean isBall(){

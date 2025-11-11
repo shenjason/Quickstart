@@ -10,11 +10,11 @@ import java.util.List;
 
 public class Robot extends Assembly {
 
-    Spinner spinner;
-    Shooter shooter;
+    public Spinner spinner;
+    public Shooter shooter;
 
 
-    Sequencer fireballAllSequence;
+    Sequencer fireballSequence;
 
     public Robot(HardwareMap _hardwareMap, Telemetry _t, boolean _debug, boolean _side) {
         super(_hardwareMap, _t, _debug, _side);
@@ -22,27 +22,17 @@ public class Robot extends Assembly {
         shooter = new Shooter(_hardwareMap, _t, _debug, _side);
         spinner = new Spinner(_hardwareMap, _t, _debug, _side);
 
-        fireballAllSequence = new Sequencer(List.of(
+        fireballSequence = new Sequencer(List.of(
                 () -> spinner.outtakeCycle(),
                 () -> shooter.autoAdjustShooterParameters(),
-                () -> spinner.cycleSpinner(),
                 () -> shooter.shooterSequence.start(),
-                () -> spinner.cycleSpinner(),
-                () -> shooter.shooterSequence.start(),
-                () -> spinner.cycleSpinner(),
-                () -> shooter.shooterSequence.start(),
-                () -> shooter.offShooter()
+                () -> spinner.cycleSpinner()
         ), List.of(
-                0d, 0d, 500d, 0.5d, 0d, 0.5d, 0d, 0.5d, 1d
+                0d, 0d, 5d, 1.5d
         ), List.of(
                 Sequencer.defaultCondition(),
                 Sequencer.defaultCondition(),
                 () -> shooter.atTargetFlywheelRPM(),
-                () -> shooter.isBall(),
-                Sequencer.defaultCondition(),
-                () -> shooter.isBall(),
-                Sequencer.defaultCondition(),
-                () -> shooter.isBall(),
                 Sequencer.defaultCondition()
         ));
     }
@@ -55,12 +45,13 @@ public class Robot extends Assembly {
     public void hardwareInit() { }
 
 
-    public void fireAllBalls(){
-        fireballAllSequence.start();
+    public void fireBall(){
+        fireballSequence.start();
     }
 
     public void intakeMode(){
         spinner.intakeCycle();
+        shooter.setFlywheelRPM(0);
     }
 
     public void setIntakeState(boolean state){
@@ -74,6 +65,6 @@ public class Robot extends Assembly {
         shooter.update();
 
 
-        fireballAllSequence.update();
+        fireballSequence.update();
     }
 }

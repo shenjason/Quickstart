@@ -28,13 +28,20 @@ public class Spinner extends Assembly {
 
     boolean intaking = false;
 
+    public boolean[] Occupied = {false, false, false};
+
 
 
     public Spinner(HardwareMap _hardwareMap, Telemetry _t, boolean _debug, boolean _side) {
         super(_hardwareMap, _t, _debug, _side);
 
         resetPress = new ActionPress(this::resetEncoder);
-        intakeCycleBallPress = new ActionPress(this::cycleSpinner);
+        intakeCycleBallPress = new ActionPress(this::intakeCycleBall);
+    }
+
+    void intakeCycleBall(){
+        Occupied[(int)Math.floor(cyclePos)] = true;
+        cycleSpinner();
     }
 
     public void resetSpinnerPos(){
@@ -45,6 +52,15 @@ public class Spinner extends Assembly {
         spinnerCycleMode();
     }
 
+    public boolean isBallAtPos(){
+
+        int pos = (cyclePos > 2.5)? 1 : (int)Math.floor(cyclePos) + 1;
+
+        if (pos > 2) pos = 0;
+
+
+        return Occupied[pos];
+    }
     public void spinnerMove(){
         spinnerMotor.setPower(0.5);
     }
@@ -78,6 +94,7 @@ public class Spinner extends Assembly {
     }
 
     public void intakeCycle(){
+        if (MODE == Spinner.INTAKE_MODE) return;
         cyclePosOffset = 0;
         cyclePos = Math.floor(cyclePos);
         MODE = Spinner.INTAKE_MODE;
@@ -85,6 +102,7 @@ public class Spinner extends Assembly {
     }
 
     public void outtakeCycle(){
+        if (MODE == Spinner.OUTTAKE_MODE) return;
         intakeMotor.setPower(0);
         cyclePosOffset = 0.5;
         cyclePos += cyclePosOffset;
@@ -93,7 +111,7 @@ public class Spinner extends Assembly {
     }
 
     public boolean isBall(){
-        return distanceSensor.getDistance(DistanceUnit.MM) < 40;
+        return distanceSensor.getDistance(DistanceUnit.MM) < 30;
     }
 
 
@@ -119,11 +137,12 @@ public class Spinner extends Assembly {
         debugAddData("CyclePos", cyclePos);
         debugAddData("magSwitchState", magSwitch.isPressed());
         debugAddData("CyclePosOffset", cyclePosOffset);
+        debugAddData("isOccupied", isBallAtPos());
 
         if (MODE == Spinner.INTAKE_MODE){
             intakeMotor.setPower((intaking && !isBall())? 1 : 0);
 
-            intakeCycleBallPress.update(isBall());
+            intakeCycleBallPress.update(isBall(), !Occupied[(cyclePos > 2.5)? 0 : (int)Math.floor(cyclePos)]);
         }
     }
 }

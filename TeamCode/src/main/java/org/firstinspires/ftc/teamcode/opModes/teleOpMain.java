@@ -52,11 +52,15 @@ public class teleOpMain extends OpMode {
 
 
         if (gamepad1.xWasPressed()){
-            robot.fireAllBalls();
+            robot.fireBall();
         }
 
         if (gamepad1.bWasPressed()){
             robot.intakeMode();
+        }
+
+        if (gamepad1.leftBumperWasPressed()){
+            robot.spinner.cycleSpinner();
         }
 
         robot.setIntakeState(gamepad1.a);
