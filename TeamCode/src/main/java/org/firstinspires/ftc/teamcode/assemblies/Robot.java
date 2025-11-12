@@ -28,7 +28,7 @@ public class Robot extends Assembly {
                 () -> shooter.shooterSequence.start(),
                 () -> spinner.cycleSpinner()
         ), List.of(
-                0d, 0d, 5d, 1.5d
+                0d, 0d, 500d, 1d
         ), List.of(
                 Sequencer.defaultCondition(),
                 Sequencer.defaultCondition(),
@@ -56,6 +56,10 @@ public class Robot extends Assembly {
 
     public void setIntakeState(boolean state){
         spinner.setIntakingState(state);
+    }
+
+    public void setIntakeRejectState(boolean state){
+        spinner.rejectMode(state);
     }
 
     @Override

@@ -64,7 +64,7 @@ public class Shooter extends Assembly {
         outtakeColorSensor = hardwareMap.get(ColorSensor.class, "outakesensor");
 
 
-        turretYawEncoder = bootkickerMotor;
+        turretYawEncoder = hardwareMap.get(DcMotor.class, "fr");
 
         turretYawEncoder.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
@@ -174,8 +174,8 @@ public class Shooter extends Assembly {
         else limelight.pipelineSwitch(RED_TARGET_LINE);
 
         LLResult result = limelight.getLatestResult();
-        double offset = 0;
-        if (limelightResultVaild(result)){
+        double offset = turretYawEncoder.getCurrentPosition() * 0.002d;
+        if (limelightResultVaild(result) && Math.abs(offset) < 10){
             TagSize = result.getTa();
             debugAddData("targetTagSize", TagSize);
 

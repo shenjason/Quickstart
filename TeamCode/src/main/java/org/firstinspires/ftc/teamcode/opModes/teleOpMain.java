@@ -11,7 +11,7 @@ import org.firstinspires.ftc.teamcode.util.Assembly;
 
 
 @Configurable
-@TeleOp(name = "TeleOpMain", group = "TeleOp")
+@TeleOp(name = "TeleOpMain(Blue)", group = "TeleOp")
 public class teleOpMain extends OpMode {
 
     public static boolean SIDE = Assembly.SIDE_BLUE;
@@ -20,9 +20,11 @@ public class teleOpMain extends OpMode {
     Follower follower;
 
     Robot robot;
+    public void setSIDE() {};
 
     @Override
     public void init() {
+        setSIDE();
         follower = Constants.createFollower(hardwareMap);
         robot = new Robot(hardwareMap, telemetry, DEBUG, SIDE);
         robot.start();
@@ -42,7 +44,7 @@ public class teleOpMain extends OpMode {
         robot.update();
 
 
-        double speed = (gamepad1.left_bumper || gamepad1.right_bumper) ? 1 : 0.3d;
+        double speed = (gamepad1.right_bumper) ? 1 : 0.5d;
         follower.setTeleOpDrive(
                 -gamepad1.left_stick_y * speed,
                 -gamepad1.left_stick_x * speed,
@@ -54,6 +56,9 @@ public class teleOpMain extends OpMode {
         if (gamepad1.xWasPressed()){
             robot.fireBall();
         }
+        if (gamepad1.yWasPressed()){
+            robot.shooter.autoAdjustShooterParameters();
+        }
 
         if (gamepad1.bWasPressed()){
             robot.intakeMode();
@@ -64,6 +69,7 @@ public class teleOpMain extends OpMode {
         }
 
         robot.setIntakeState(gamepad1.a);
+        robot.setIntakeRejectState(gamepad1.dpad_down);
 
         telemetry.update();
 
