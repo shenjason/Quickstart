@@ -46,6 +46,7 @@ public class Robot extends Assembly {
 
 
     public void fireBall(){
+        spinner.Occupied[spinner.OuttakePos()] = false;
         fireballSequence.start();
     }
 

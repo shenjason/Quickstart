@@ -104,7 +104,7 @@ public class Shooter extends Assembly {
                 Sequencer.defaultCondition(),
                 Sequencer.defaultCondition(),
                 Sequencer.defaultCondition(),
-                Sequencer.defaultCondition(),
+                () -> !isBall(),
                 Sequencer.defaultCondition(),
                 Sequencer.defaultCondition(),
                 Sequencer.defaultCondition()

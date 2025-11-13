@@ -42,7 +42,7 @@ public class Spinner extends Assembly {
     }
 
     void intakeCycleBall(){
-        Occupied[(int)Math.floor(cyclePos)] = true;
+        Occupied[(cyclePos > 2.5)? 0 : (int)Math.floor(cyclePos)] = true;
         cycleSpinner();
     }
 
@@ -54,14 +54,14 @@ public class Spinner extends Assembly {
         spinnerCycleMode();
     }
 
-    public boolean isBallAtPos(){
+    public int OuttakePos(){
 
         int pos = (cyclePos > 2.5)? 1 : (int)Math.floor(cyclePos) + 1;
 
         if (pos > 2) pos = 0;
 
 
-        return Occupied[pos];
+        return pos;
     }
     public void spinnerMove(){
         spinnerMotor.setPower(0.5);
@@ -144,8 +144,7 @@ public class Spinner extends Assembly {
         debugAddData("CyclePos", cyclePos);
         debugAddData("magSwitchState", magSwitch.isPressed());
         debugAddData("CyclePosOffset", cyclePosOffset);
-        debugAddData("isOccupied", isBallAtPos());
-        debugAddData("OccupiedList", Occupied);
+        debugAddData("OuttakePos", OuttakePos());
 
         if (MODE == Spinner.INTAKE_MODE){
             intakeMotor.setPower((intaking && !isBall())? 1 : altIntakePow);
