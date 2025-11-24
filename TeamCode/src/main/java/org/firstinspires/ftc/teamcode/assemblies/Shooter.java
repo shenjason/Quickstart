@@ -23,16 +23,12 @@ public class Shooter extends Assembly {
     final int SAMPLE_T = 100;
 
     final double TARGET_CENTER_X = 0, TARGET_CENTER_CLEARANCE = 3d;
-    final double PITCH_MIN_POS = 0.8, PITCH_MAX_POS = 0.1;
-    final double TOP_GATE_IN_POS = 0.5, TOP_GATE_OUT_POS = 0.7;
-    final double BOTTOM_OPEN_GATE_POS = 0.65, BOTTOM_CLOSE_GATE_POS = 0.9;
 
+    final double OPEN_GATE_POS = 0.65, CLOSE_GATE_POS = 0.9;
 
     public final static int GPP = 0, PGP = 1, PPG = 2, BLUE_TARGET_LINE = 3, RED_TARGET_LINE = 4;
 
-    DcMotor flywheelMotor, bootkickerMotor, turretYawEncoder;
-    CRServo turretYawServo;
-    Servo turretPitchServo, gateServo, bootkickerServo;
+    DcMotor flywheelMotor, turretMotor;
 
     ColorSensor outtakeColorSensor;
 
@@ -45,7 +41,6 @@ public class Shooter extends Assembly {
 
     public PIDcontroller flywheelPID;
 
-    public Sequencer shooterSequence;
 
 
     public Shooter(HardwareMap _hardwareMap, Telemetry _t, boolean _debug, boolean _side) {
@@ -55,20 +50,8 @@ public class Shooter extends Assembly {
     @Override
     public void hardwareInit() {
         flywheelMotor = hardwareMap.get(DcMotor.class, "shootermotor");
-        bootkickerMotor = hardwareMap.get(DcMotor.class, "intakemotor");
-        turretYawServo = hardwareMap.get(CRServo.class, "yawservo");
-        turretPitchServo = hardwareMap.get(Servo.class, "pitchservo");
-        bootkickerServo = hardwareMap.get(Servo.class, "topgate");
-        gateServo = hardwareMap.get(Servo.class, "bottomgate");
+        turretMotor = hardwareMap.get(DcMotor.class, "turret");
         limelight = hardwareMap.get(Limelight3A.class, "limelight");
-        outtakeColorSensor = hardwareMap.get(ColorSensor.class, "outakesensor");
-
-
-        turretYawEncoder = hardwareMap.get(DcMotor.class, "fr");
-
-        turretYawEncoder.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-
-        turretYawServo.setDirection(DcMotorSimple.Direction.REVERSE);
 
 
 
@@ -87,29 +70,6 @@ public class Shooter extends Assembly {
         flywheelRPMSampleTimer = new Timer();
 
 
-        TopGateIN();
-        closeBottomGate();
-
-        shooterSequence = new Sequencer(List.of(
-                this::BootkickerON,
-                this::TopGateIN,
-                this::openBottomGate,
-                this::TopGateOUT,
-                this::closeBottomGate,
-                this::TopGateIN,
-                this::BootkickerOFF
-        ), List.of(
-                0d, 0d, 0d, 0.15d, 0.1d, 0.2d, 0.2d
-        ), List.of(
-                Sequencer.defaultCondition(),
-                Sequencer.defaultCondition(),
-                Sequencer.defaultCondition(),
-                Sequencer.defaultCondition(),
-                Sequencer.defaultCondition(),
-                Sequencer.defaultCondition(),
-                Sequencer.defaultCondition()
-
-        ));
 
     }
 
@@ -162,48 +122,10 @@ public class Shooter extends Assembly {
         return Math.abs(targetFlyWheelRPM-flywheelRPM) < 150;
     }
 
-    public void setPitch(double pitchAngle){
-        if (pitchAngle < 45 || pitchAngle > 60) return;
-        double perc = (pitchAngle - 45d) / 15d;
-        turretPitchServo.setPosition(PITCH_MIN_POS +  (PITCH_MAX_POS - PITCH_MIN_POS) * perc);
-    }
 
 
-    void autoTargeting(){
-        if (side) limelight.pipelineSwitch(BLUE_TARGET_LINE);
-        else limelight.pipelineSwitch(RED_TARGET_LINE);
-
-        LLResult result = limelight.getLatestResult();
-        double offset = turretYawEncoder.getCurrentPosition() * 0.002d;
-        if (limelightResultVaild(result) && Math.abs(offset) < 10){
-            TagSize = result.getTa();
-            debugAddData("targetTagSize", TagSize);
-
-            offset = result.getTx() - TARGET_CENTER_X;
-            debugAddData("targetOffsetX", offset);
-
-            debugAddData("targetOffsetABS", Math.abs(offset));
-
-        }
-
-        if (Math.abs(offset) > TARGET_CENTER_CLEARANCE){
-            turretYawServo.setPower(Math.max(Math.abs(offset) * turret_yawP, 0.1) * Math.signum(offset));
-            debugAddLine("Adjusting...");
-        }else{
-            turretYawServo.setPower(0);
-        }
-
-    }
-
-
-    public void openBottomGate(){ gateServo.setPosition(BOTTOM_OPEN_GATE_POS);}
-    public void closeBottomGate(){ gateServo.setPosition(BOTTOM_CLOSE_GATE_POS);}
-    public void TopGateIN(){ bootkickerServo.setPosition(TOP_GATE_IN_POS);}
-    public void TopGateOUT(){ bootkickerServo.setPosition(TOP_GATE_OUT_POS);}
-
-    public void BootkickerON(){ bootkickerMotor.setPower(1);}
-    public void BootkickerOFF(){ bootkickerMotor.setPower(0);}
-
+    public void openBottomGate(){ gateServo.setPosition(OPEN_GATE_POS);}
+    public void closeBottomGate(){ gateServo.setPosition(CLOSE_GATE_POS);}
     public boolean isGreen(){
         return (outtakeColorSensor.green() > 100);
     }
@@ -219,7 +141,6 @@ public class Shooter extends Assembly {
 
     public void autoAdjustShooterParameters(){
         setFlywheelRPM(4000);
-        setPitch(60);
     }
 
     public void offShooter(){
@@ -234,13 +155,7 @@ public class Shooter extends Assembly {
         debugAddData("flyWheelRPM", flywheelRPM);
         debugAddData("RPMError", flywheelPID.getE());
         debugAddData("flywheelPowerOutput", flywheelPID.currentOutput);
-        debugAddData("outtakeColorR", outtakeColorSensor.red());
-        debugAddData("outtakeColorG", outtakeColorSensor.green());
-        debugAddData("outtakeColorB", outtakeColorSensor.blue());
-        debugAddData("outtakeBall", isBall());
 //        autoTargeting();
-
-        shooterSequence.update();
     }
 
 }
