@@ -25,15 +25,13 @@ public class Robot extends Assembly {
         fireballSequence = new Sequencer(List.of(
                 () -> spinner.outtakeCycle(),
                 () -> shooter.autoAdjustShooterParameters(),
-                () -> shooter.shooterSequence.start(),
-                () -> spinner.cycleSpinner()
+                () -> shooter.shooterSequence.start()
         ), List.of(
-                0d, 0d, 500d, 1d
+                0d, 0.2d, 500d
         ), List.of(
                 Sequencer.defaultCondition(),
                 Sequencer.defaultCondition(),
-                () -> shooter.atTargetFlywheelRPM(),
-                Sequencer.defaultCondition()
+                () -> shooter.atTargetFlywheelRPM()
         ));
     }
 

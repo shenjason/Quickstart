@@ -104,7 +104,7 @@ public class Shooter extends Assembly {
                 Sequencer.defaultCondition(),
                 Sequencer.defaultCondition(),
                 Sequencer.defaultCondition(),
-                () -> !isBall(),
+                Sequencer.defaultCondition(),
                 Sequencer.defaultCondition(),
                 Sequencer.defaultCondition(),
                 Sequencer.defaultCondition()
@@ -238,7 +238,7 @@ public class Shooter extends Assembly {
         debugAddData("outtakeColorG", outtakeColorSensor.green());
         debugAddData("outtakeColorB", outtakeColorSensor.blue());
         debugAddData("outtakeBall", isBall());
-        autoTargeting();
+//        autoTargeting();
 
         shooterSequence.update();
     }

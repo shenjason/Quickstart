@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode.assemblies;
 
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.DistanceSensor;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.TouchSensor;
@@ -28,7 +29,7 @@ public class Spinner extends Assembly {
 
     public boolean MODE = Spinner.INTAKE_MODE;
 
-    boolean intaking = false;
+    public boolean intaking = false;
 
     public boolean[] Occupied = {false, false, false};
 
@@ -78,7 +79,7 @@ public class Spinner extends Assembly {
     public void spinnerCycleMode(){
         spinnerMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         spinnerMotor.setTargetPosition(0);
-        spinnerMotor.setPower(0.8);
+        spinnerMotor.setPower(0.6);
         spinnerMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
     }
 
@@ -129,6 +130,8 @@ public class Spinner extends Assembly {
 
         distanceSensor = hardwareMap.get(DistanceSensor.class, "intakesensor");
         intakeMotor = hardwareMap.get(DcMotor.class, "intakemotor");
+
+        spinnerMotor.setDirection(DcMotorSimple.Direction.REVERSE);
     }
 
     void resetEncoder(){
