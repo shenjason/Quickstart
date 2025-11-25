@@ -40,12 +40,6 @@ public class shooterPID extends OpMode {
         s.turret_yawP = yawP;
         s.setFlywheelRPM(TARGET_RPM);
 
-        s.setPitch(pitch);
-//
-        if (gamepad1.aWasPressed()){
-            s.shooterSequence.start();
-        }
-
         s.update();
 
 

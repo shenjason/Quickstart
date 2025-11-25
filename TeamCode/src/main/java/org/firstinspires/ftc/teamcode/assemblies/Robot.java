@@ -10,64 +10,25 @@ import java.util.List;
 
 public class Robot extends Assembly {
 
-    public Spinner spinner;
     public Shooter shooter;
 
 
-    Sequencer fireballSequence;
 
     public Robot(HardwareMap _hardwareMap, Telemetry _t, boolean _debug, boolean _side) {
         super(_hardwareMap, _t, _debug, _side);
 
         shooter = new Shooter(_hardwareMap, _t, _debug, _side);
-        spinner = new Spinner(_hardwareMap, _t, _debug, _side);
 
-        fireballSequence = new Sequencer(List.of(
-                () -> spinner.outtakeCycle(),
-                () -> shooter.autoAdjustShooterParameters(),
-                () -> shooter.shooterSequence.start()
-        ), List.of(
-                0d, 0.2d, 500d
-        ), List.of(
-                Sequencer.defaultCondition(),
-                Sequencer.defaultCondition(),
-                () -> shooter.atTargetFlywheelRPM()
-        ));
     }
 
-    public void start(){
-        spinner.resetSpinnerPos();
-    }
 
     @Override
     public void hardwareInit() { }
 
 
-    public void fireBall(){
-        spinner.Occupied[spinner.OuttakePos()] = false;
-        fireballSequence.start();
-    }
-
-    public void intakeMode(){
-        spinner.intakeCycle();
-        shooter.setFlywheelRPM(0);
-    }
-
-    public void setIntakeState(boolean state){
-        spinner.setIntakingState(state);
-    }
-
-    public void setIntakeRejectState(boolean state){
-        spinner.rejectMode(state);
-    }
-
     @Override
     public void update() {
 
-        spinner.update();
         shooter.update();
-
-
-        fireballSequence.update();
     }
 }

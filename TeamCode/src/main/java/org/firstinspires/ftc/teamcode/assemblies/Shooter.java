@@ -22,25 +22,21 @@ public class Shooter extends Assembly {
 
     final int SAMPLE_T = 100;
 
-    final double TARGET_CENTER_X = 0, TARGET_CENTER_CLEARANCE = 3d;
-
     final double OPEN_GATE_POS = 0.65, CLOSE_GATE_POS = 0.9;
-
-    public final static int GPP = 0, PGP = 1, PPG = 2, BLUE_TARGET_LINE = 3, RED_TARGET_LINE = 4;
-
-    DcMotor flywheelMotor, turretMotor;
-
-    ColorSensor outtakeColorSensor;
-
-    Limelight3A limelight;
+    DcMotor flywheelMotor, intakeMotor;
+    Servo gateServo;
 
     Timer flywheelRPMSampleTimer;
 
     double flywheelRPM = 0, prevFlyWheelPos = 0, targetFlyWheelRPM = 0;
-    public double TagSize = 0;
 
     public PIDcontroller flywheelPID;
+    public double TagSize;
 
+
+    public void autoAdjustShooterParameters(){
+        setFlywheelRPM(TagSize * 0.02d + 60);
+    }
 
 
     public Shooter(HardwareMap _hardwareMap, Telemetry _t, boolean _debug, boolean _side) {
@@ -49,12 +45,10 @@ public class Shooter extends Assembly {
 
     @Override
     public void hardwareInit() {
-        flywheelMotor = hardwareMap.get(DcMotor.class, "shootermotor");
-        turretMotor = hardwareMap.get(DcMotor.class, "turret");
-        limelight = hardwareMap.get(Limelight3A.class, "limelight");
+        flywheelMotor = hardwareMap.get(DcMotor.class, "shooter");
+        intakeMotor = hardwareMap.get(DcMotor.class, "intake");
 
-
-
+        gateServo = hardwareMap.get(Servo.class, "gate");
 
 
         flywheelMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
@@ -63,14 +57,8 @@ public class Shooter extends Assembly {
 
         flywheelPID = new PIDcontroller(flywheelP, flyWheelI, flyWheelD, 0, 1);
 
-        limelight.setPollRateHz(30);
-
-        limelight.start();
-
         flywheelRPMSampleTimer = new Timer();
-
-
-
+        closeGate();
     }
 
     void calcFlyWheelRPM(){
@@ -84,33 +72,8 @@ public class Shooter extends Assembly {
                 / (flywheelRPMSampleTimer.getElapsedTime() / 60000d);
         flywheelRPMSampleTimer.resetTimer();
         prevFlyWheelPos = flywheelMotor.getCurrentPosition();
-
-        flywheelMotor.setPower(flywheelPID.step(targetFlyWheelRPM / 6000d, flywheelRPM / 6000d));
-    }
-
-    public LLResult limelightGetResult(int pipeline_index) {
-        limelight.pipelineSwitch(pipeline_index);
-        LLResult result = limelight.getLatestResult();
-        while (result.getPipelineIndex() != pipeline_index) result = limelight.getLatestResult();
-
-        return result;
-    }
-
-    public boolean limelightResultVaild(LLResult result){
-        return (result != null && result.isValid());
-    }
-
-    public int determinePattern(){
-        if (limelightResultVaild(limelightGetResult(PGP))){
-            return PGP;
-        }
-        if (limelightResultVaild(limelightGetResult(GPP))){
-            return GPP;
-        }
-        if (limelightResultVaild(limelightGetResult(PPG))){
-            return PPG;
-        }
-        return -1;
+        // *0.000167 same as /6000
+        flywheelMotor.setPower(flywheelPID.step(targetFlyWheelRPM * 0.000167d, flywheelRPM * 0.000167d));
     }
 
 
@@ -124,29 +87,12 @@ public class Shooter extends Assembly {
 
 
 
-    public void openBottomGate(){ gateServo.setPosition(OPEN_GATE_POS);}
-    public void closeBottomGate(){ gateServo.setPosition(CLOSE_GATE_POS);}
-    public boolean isGreen(){
-        return (outtakeColorSensor.green() > 100);
-    }
+    public void openGate(){ gateServo.setPosition(OPEN_GATE_POS);}
+    public void closeGate(){ gateServo.setPosition(CLOSE_GATE_POS);}
 
-    public boolean isPurple(){
-        return (outtakeColorSensor.blue() > 100 && outtakeColorSensor.red() > 80);
-    }
-
-    public boolean isBall(){
-        return (isGreen() || isPurple());
-    }
-
-
-    public void autoAdjustShooterParameters(){
-        setFlywheelRPM(4000);
-    }
-
-    public void offShooter(){
+    public void offShooter() {
         setFlywheelRPM(0);
     }
-
 
 
     @Override
@@ -155,7 +101,7 @@ public class Shooter extends Assembly {
         debugAddData("flyWheelRPM", flywheelRPM);
         debugAddData("RPMError", flywheelPID.getE());
         debugAddData("flywheelPowerOutput", flywheelPID.currentOutput);
-//        autoTargeting();
+        autoAdjustShooterParameters();
     }
 
 }

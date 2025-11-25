@@ -27,7 +27,6 @@ public class teleOpMain extends OpMode {
         setSIDE();
         follower = Constants.createFollower(hardwareMap);
         robot = new Robot(hardwareMap, telemetry, DEBUG, SIDE);
-        robot.start();
 
         follower.updateDrivetrain();
     }
@@ -52,24 +51,6 @@ public class teleOpMain extends OpMode {
                 true // Robot Centric
         );
 
-
-        if (gamepad1.xWasPressed()){
-            robot.fireBall();
-        }
-        if (gamepad1.yWasPressed()){
-            robot.shooter.autoAdjustShooterParameters();
-        }
-
-        if (gamepad1.bWasPressed()){
-            robot.intakeMode();
-        }
-
-        if (gamepad1.leftBumperWasPressed()){
-            robot.spinner.cycleSpinner();
-        }
-
-        robot.setIntakeState(gamepad1.a);
-        robot.setIntakeRejectState(gamepad1.dpad_down);
 
         telemetry.update();
 
