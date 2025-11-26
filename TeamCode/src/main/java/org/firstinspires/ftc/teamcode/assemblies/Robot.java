@@ -17,10 +17,20 @@ public class Robot extends Assembly {
         super(_hardwareMap, _t, _debug, _side);
 
         shooter = new Shooter(_hardwareMap, _t, f, _debug, _side);
+
+        idle();
     }
 
     public void shoot(){
         shooter.Shoot();
+    }
+
+    public void idle(){
+        shooter.idleMode();
+    }
+
+    public void tracking(){
+        shooter.trackingMode();
     }
     public void intake(boolean state){
         if (shooter.shooting) return;

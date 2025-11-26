@@ -80,18 +80,17 @@ public class Turret extends Assembly {
         double rawDiff = angle - robotAngle;
         double diffAngle = rawDiff-2*Math.PI*((rawDiff>Math.PI)?1:-1);
         targetRotation = diffAngle - Math.toRadians(Tx);
-        double currentRotation = turretMotor.getCurrentPosition()/145.1*16/100*2*Math.PI-offsetAngle;
+        double currentRotation = (turretMotor.getCurrentPosition()/145.1d*0.16d*2d*Math.PI) - offsetAngle;
         debugAddData("currentRotation", currentRotation);
         double clamped_target_rot = Math.abs(targetRotation)<=Math.PI/2?targetRotation:Math.PI/2*Math.signum(targetRotation);
 
         turretMotor.setPower(turretController.step((mode == Turret.TRACKING_MODE) ? clamped_target_rot : debugTargetAngle, currentRotation));
 
-
+        debugAddLine("Turret");
         debugAddData("PoseX", cp.getX());
         debugAddData("PoseY", cp.getY());
         debugAddData("Heading", Math.toDegrees(cp.getHeading()));
         debugAddData("Angle bot->tag approx",diffAngle);
-
     }
 
     public LLResult limelightGetResult(int pipeline_index) {
@@ -122,6 +121,6 @@ public class Turret extends Assembly {
         return Math.atan2(a2-a,b2-b);
     }
     public boolean isPointed(){
-        return (mode==TRACKING_MODE)?Math.abs(Tx)<=5.0:true;
+        return mode != TRACKING_MODE || (Math.abs(Tx) <= 5.0 && isInCamera);
     }
 }

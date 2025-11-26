@@ -71,7 +71,6 @@ public class Shooter extends Assembly {
 
 
         flywheelMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-//        flywheelMotor.setDirection(DcMotorSimple.Direction.REVERSE);
         flywheelMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
 
         flywheelPID = new PIDcontroller(flywheelP, flyWheelI, flyWheelD, 0, 1);
@@ -128,13 +127,27 @@ public class Shooter extends Assembly {
     }
 
 
+    public void idleMode(){
+        turret.mode = Turret.IDLE_MODE;
+    }
+
+    public void trackingMode(){
+        turret.mode = Turret.TRACKING_MODE;
+    }
+
+
+    public int turretMode(){
+        return turret.mode;
+    }
+
+
     @Override
     public void update() {
         calcFlyWheelRPM();
+        debugAddLine("Shooter");
         debugAddData("flyWheelRPM", flywheelRPM);
         debugAddData("RPMError", flywheelPID.getE());
         debugAddData("flywheelPowerOutput", flywheelPID.currentOutput);
-        autoAdjustShooterParameters();
 
         if (turret_active) turret.update();
 
