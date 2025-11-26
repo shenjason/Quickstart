@@ -4,10 +4,12 @@ import com.bylazar.configurables.annotations.Configurable;
 import com.bylazar.panels.Panels;
 import com.bylazar.telemetry.PanelsTelemetry;
 import com.bylazar.telemetry.TelemetryManager;
+import com.pedropathing.follower.Follower;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.teamcode.assemblies.Shooter;
+import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 import org.firstinspires.ftc.teamcode.util.ActionPress;
 import org.firstinspires.ftc.teamcode.util.Assembly;
 
@@ -17,11 +19,12 @@ import org.firstinspires.ftc.teamcode.util.Assembly;
 public class shooterPID extends OpMode {
 
     TelemetryManager telemetryManager;
+    Follower follower;
     public static double P, I, D, TARGET_RPM;
+    public static boolean LOAD = true;
 
     public static double yawP = 0.05d;
 
-    public static double pitch = 60;
     Shooter s;
 
 
@@ -29,9 +32,13 @@ public class shooterPID extends OpMode {
     @Override
     public void init() {
         telemetryManager = PanelsTelemetry.INSTANCE.getTelemetry();
-        s = new Shooter(hardwareMap, telemetry, true, Assembly.SIDE_BLUE);
-        P = s.flywheelP; I=s.flyWheelI; D= s.flyWheelD;
 
+        follower = Constants.createFollower(hardwareMap);
+
+        s = new Shooter(hardwareMap, telemetry, follower, true, Assembly.SIDE_BLUE);
+        if (LOAD){
+            P = s.flywheelP;I=s.flyWheelI; D= s.flyWheelD;
+        }
     }
 
     @Override

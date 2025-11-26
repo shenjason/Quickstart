@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode.assemblies;
 
+import com.pedropathing.follower.Follower;
 import com.pedropathing.util.Timer;
 import com.qualcomm.hardware.limelightvision.LLResult;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
@@ -34,13 +35,17 @@ public class Shooter extends Assembly {
     public double TagSize;
 
 
+    private Turret turret;
+
+
     public void autoAdjustShooterParameters(){
         setFlywheelRPM(TagSize * 0.02d + 60);
     }
 
 
-    public Shooter(HardwareMap _hardwareMap, Telemetry _t, boolean _debug, boolean _side) {
+    public Shooter(HardwareMap _hardwareMap, Telemetry _t, Follower follower, boolean _debug, boolean _side) {
         super(_hardwareMap, _t, _debug, _side);
+        turret = new Turret(hardwareMap, t, follower, debug, side);
     }
 
     @Override
@@ -58,6 +63,9 @@ public class Shooter extends Assembly {
         flywheelPID = new PIDcontroller(flywheelP, flyWheelI, flyWheelD, 0, 1);
 
         flywheelRPMSampleTimer = new Timer();
+
+
+
         closeGate();
     }
 
