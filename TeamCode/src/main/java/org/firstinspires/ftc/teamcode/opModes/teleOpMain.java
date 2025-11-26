@@ -26,7 +26,7 @@ public class teleOpMain extends OpMode {
     public void init() {
         setSIDE();
         follower = Constants.createFollower(hardwareMap);
-        robot = new Robot(hardwareMap, telemetry, DEBUG, SIDE);
+        robot = new Robot(hardwareMap, telemetry, follower, DEBUG, SIDE);
 
         follower.updateDrivetrain();
     }
@@ -50,6 +50,17 @@ public class teleOpMain extends OpMode {
                 -gamepad1.right_stick_x * speed,
                 true // Robot Centric
         );
+
+
+        robot.intake(gamepad1.a);
+
+        if (gamepad1.bWasPressed()){
+            robot.shooter.autoAdjustShooterParameters();
+        }
+
+        if (gamepad1.yWasPressed()){
+            robot.shooter.Shoot();
+        }
 
 
         telemetry.update();

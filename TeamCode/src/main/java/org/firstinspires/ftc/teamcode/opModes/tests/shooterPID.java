@@ -9,6 +9,7 @@ import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.teamcode.assemblies.Shooter;
+import org.firstinspires.ftc.teamcode.assemblies.Turret;
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 import org.firstinspires.ftc.teamcode.util.ActionPress;
 import org.firstinspires.ftc.teamcode.util.Assembly;
@@ -39,13 +40,21 @@ public class shooterPID extends OpMode {
         if (LOAD){
             P = s.flywheelP;I=s.flyWheelI; D= s.flyWheelD;
         }
+
+        s.turret.mode = Turret.IDLE_MODE;
     }
 
     @Override
     public void loop() {
+
         s.flywheelP = P; s.flyWheelD = D; s.flyWheelI = I;
         s.turret_yawP = yawP;
         s.setFlywheelRPM(TARGET_RPM);
+
+        if (gamepad1.aWasPressed()){
+            s.Shoot();
+        }
+
 
         s.update();
 

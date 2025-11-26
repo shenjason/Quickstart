@@ -13,13 +13,27 @@ public class Robot extends Assembly {
 
     public Shooter shooter;
 
-
-
     public Robot(HardwareMap _hardwareMap, Telemetry _t, Follower f, boolean _debug, boolean _side) {
         super(_hardwareMap, _t, _debug, _side);
 
         shooter = new Shooter(_hardwareMap, _t, f, _debug, _side);
     }
+
+    public void shoot(){
+        shooter.Shoot();
+    }
+    public void intake(boolean state){
+        if (shooter.shooting) return;
+        if (state){
+            shooter.closeGate();
+            shooter.setIntakeMotorPower(-1);
+            return;
+        }
+
+        shooter.setIntakeMotorPower(0);
+
+    }
+
 
 
     @Override

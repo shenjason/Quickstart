@@ -23,7 +23,7 @@ public class Shooter extends Assembly {
 
     final int SAMPLE_T = 100;
 
-    final double OPEN_GATE_POS = 0.65, CLOSE_GATE_POS = 0.9;
+    final double OPEN_GATE_POS = 0.8, CLOSE_GATE_POS = 1;
     DcMotor flywheelMotor, intakeMotor;
     Servo gateServo;
 
@@ -35,9 +35,21 @@ public class Shooter extends Assembly {
     public double TagSize;
 
 
-    private Turret turret;
 
-    public boolean turret_active = true;
+    public Turret turret;
+
+    public boolean turret_active = true, shooting = false;
+
+    public Sequencer shootSequence = new Sequencer(List.of(
+            () -> shooting = true,
+            this::openGate,
+            () -> setIntakeMotorPower(-1),
+            () -> setIntakeMotorPower(0),
+            this::closeGate,
+            () -> shooting = false
+    ), List.of(
+            0d, 0d, 0d, 1.5d, 0d, 0d
+    ));
 
 
     public void autoAdjustShooterParameters(){
@@ -52,20 +64,19 @@ public class Shooter extends Assembly {
 
     @Override
     public void hardwareInit() {
-        flywheelMotor = hardwareMap.get(DcMotor.class, "shooter");
+        flywheelMotor = hardwareMap.get(DcMotor.class, "fly");
         intakeMotor = hardwareMap.get(DcMotor.class, "intake");
 
         gateServo = hardwareMap.get(Servo.class, "gate");
 
 
         flywheelMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        flywheelMotor.setDirection(DcMotorSimple.Direction.REVERSE);
+//        flywheelMotor.setDirection(DcMotorSimple.Direction.REVERSE);
         flywheelMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
 
         flywheelPID = new PIDcontroller(flywheelP, flyWheelI, flyWheelD, 0, 1);
 
         flywheelRPMSampleTimer = new Timer();
-
 
 
         closeGate();
@@ -95,6 +106,14 @@ public class Shooter extends Assembly {
         return Math.abs(targetFlyWheelRPM-flywheelRPM) < 150;
     }
 
+    public boolean canShoot(){
+        return turret.isPointed() && atTargetFlywheelRPM();
+    }
+
+    public void Shoot(){
+        if (!canShoot()) return;
+        shootSequence.start();
+    }
 
 
     public void openGate(){ gateServo.setPosition(OPEN_GATE_POS);}
@@ -118,6 +137,8 @@ public class Shooter extends Assembly {
         autoAdjustShooterParameters();
 
         if (turret_active) turret.update();
+
+        shootSequence.update();
     }
 
 }
