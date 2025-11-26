@@ -37,6 +37,8 @@ public class Shooter extends Assembly {
 
     private Turret turret;
 
+    public boolean turret_active = true;
+
 
     public void autoAdjustShooterParameters(){
         setFlywheelRPM(TagSize * 0.02d + 60);
@@ -102,6 +104,10 @@ public class Shooter extends Assembly {
         setFlywheelRPM(0);
     }
 
+    public void setIntakeMotorPower(double power){
+        intakeMotor.setPower(power);
+    }
+
 
     @Override
     public void update() {
@@ -110,6 +116,8 @@ public class Shooter extends Assembly {
         debugAddData("RPMError", flywheelPID.getE());
         debugAddData("flywheelPowerOutput", flywheelPID.currentOutput);
         autoAdjustShooterParameters();
+
+        if (turret_active) turret.update();
     }
 
 }
