@@ -66,8 +66,7 @@ public class Turret extends Assembly {
         LLResult llResult = limelight.getLatestResult();
         Pose cp = follower.getPose();
         double angle = getAngle(cp.getX(),cp.getY(),targetPointX,TARGETY);
-        Ta = 0;
-        Tx = 0;
+        Ta = 0; Tx = 0;
         double robotAngle = cp.getHeading();
         isInCamera = limelightResultVaild(llResult);
         if (isInCamera) {
@@ -91,6 +90,7 @@ public class Turret extends Assembly {
         debugAddData("PoseY", cp.getY());
         debugAddData("Heading", Math.toDegrees(cp.getHeading()));
         debugAddData("Angle bot->tag approx",diffAngle);
+        debugAddData("isPointed",isPointed());
     }
 
     public LLResult limelightGetResult(int pipeline_index) {
@@ -121,6 +121,6 @@ public class Turret extends Assembly {
         return Math.atan2(a2-a,b2-b);
     }
     public boolean isPointed(){
-        return mode != TRACKING_MODE || (Math.abs(Tx) <= 5.0 && isInCamera);
+        return mode == IDLE_MODE || (Math.abs(Tx) <= 5.0 && isInCamera);
     }
 }

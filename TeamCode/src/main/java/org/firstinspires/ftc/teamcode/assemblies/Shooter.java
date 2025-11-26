@@ -150,6 +150,7 @@ public class Shooter extends Assembly {
         debugAddData("flywheelPowerOutput", flywheelPID.currentOutput);
 
         if (turret_active) turret.update();
+        TagSize = turret.Ta;
 
         shootSequence.update();
     }
