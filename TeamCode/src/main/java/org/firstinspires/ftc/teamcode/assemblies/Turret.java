@@ -20,6 +20,7 @@ import org.opencv.core.Mat;
 public class Turret extends Assembly {
     public double P =1,I=0,D=0;
     public PIDcontroller turretController;
+    public boolean isInCamera;
     private double targetRotation;
     public double Ta;
     private double Tx;
@@ -34,6 +35,9 @@ public class Turret extends Assembly {
 
     public final static int GPP = 0, PGP = 1, PPG = 2, BLUE_TARGET_LINE = 3, RED_TARGET_LINE = 4, TRACKING_MODE = 0, IDLE_MODE = 1;
     public int mode = IDLE_MODE;
+    public double offsetAngle = 0;
+
+    public double debugTargetAngle = 0;
 
 
     public Turret(HardwareMap _hardwareMap, Telemetry _t, Follower f, boolean _debug, boolean _side) {
@@ -65,18 +69,22 @@ public class Turret extends Assembly {
         Ta = 0;
         Tx = 0;
         double robotAngle = cp.getHeading();
-        if (limelightResultVaild(llResult)) {
+        isInCamera = limelightResultVaild(llResult);
+        if (isInCamera) {
             Ta = llResult.getTx();
             Tx = llResult.getTx();
             debugAddData("Ta", Ta);
             debugAddData("Tx", Tx);
         }
+
         double rawDiff = angle - robotAngle;
         double diffAngle = rawDiff-2*Math.PI*((rawDiff>Math.PI)?1:-1);
-        targetRotation = diffAngle - Tx;
-        double currentRotation = turretMotor.getCurrentPosition()/145.1*16/100*2*Math.PI;
+        targetRotation = diffAngle - Math.toRadians(Tx);
+        double currentRotation = turretMotor.getCurrentPosition()/145.1*16/100*2*Math.PI-offsetAngle;
         debugAddData("currentRotation", currentRotation);
-        turretMotor.setPower(turretController.step((Math.abs(targetRotation)<=Math.PI/2)?targetRotation:Math.PI/2*Math.signum(targetRotation) , currentRotation));
+        double clamped_target_rot = Math.abs(targetRotation)<=Math.PI/2?targetRotation:Math.PI/2*Math.signum(targetRotation);
+
+        turretMotor.setPower(turretController.step((mode == Turret.TRACKING_MODE) ? clamped_target_rot : debugTargetAngle, currentRotation));
 
 
         debugAddData("PoseX", cp.getX());
@@ -112,5 +120,8 @@ public class Turret extends Assembly {
 
     public static double getAngle(double a, double b, double a2, double b2) {
         return Math.atan2(a2-a,b2-b);
+    }
+    public boolean isPointed(){
+        return (mode==TRACKING_MODE)?Math.abs(Tx)<=5.0:true;
     }
 }
