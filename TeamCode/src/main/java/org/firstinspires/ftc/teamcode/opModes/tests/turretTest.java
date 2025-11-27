@@ -44,12 +44,12 @@ public class turretTest extends OpMode {
     @Override
     public void loop() {
         t.P = P;t.I = I; t.D = D;
-        t.debugTargetAngle = TARGET_ROTATION;
+        t.debugTargetAngle = Math.toRadians(TARGET_ROTATION);
 
         telemetryManager.addData("Error", t.turretController.getE());
         telemetryManager.addData("Output", t.turretController.currentOutput);
 
-        telemetryManager.update(telemetry);
+        telemetryManager.update();
 
         telemetry.update();
         follower.update();

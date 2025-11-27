@@ -49,20 +49,10 @@ public class autoblue extends OpMode {
 
     public static class Paths {
 
-        public PathChain Path10;
-        public PathChain Path2;
-        public PathChain Path3;
-        public PathChain Path4;
-        public PathChain Path5;
-        public PathChain Path6;
-        public PathChain Path7;
-        public PathChain Path8;
-        public PathChain Path9;
-        public PathChain Path10;
-        public PathChain Path11;
+        public PathChain Path1, Path2, Path3, Path4, Path5, Path6, Path7, Path8, Path9, Path10, Path11;
 
         public Paths(Follower follower) {
-            Path10 = follower
+            Path1 = follower
                     .pathBuilder()
                     .addPath(
                             new BezierLine(new Pose(26.200, 130.000), new Pose(44.000, 111.000))
