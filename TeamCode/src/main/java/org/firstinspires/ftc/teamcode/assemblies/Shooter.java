@@ -24,8 +24,9 @@ public class Shooter extends Assembly {
     final int SAMPLE_T = 100;
 
     final double OPEN_GATE_POS = 0.8, CLOSE_GATE_POS = 1;
+    final double KICK_BOOT_POS = 0, IDLE_BOOT_POS = 1;
     DcMotor flywheelMotor, intakeMotor;
-    Servo gateServo;
+    Servo gateServo, bootKickerServo;
 
     Timer flywheelRPMSampleTimer;
 
@@ -40,16 +41,25 @@ public class Shooter extends Assembly {
 
     public boolean turret_active = true, shooting = false;
 
+    public Sequencer bootSequence = new Sequencer(List.of(
+            () -> setBootkickerState(true),
+            () -> setBootkickerState(false)
+    ), List.of(
+            0d, 0.5d
+    ));
+
     public Sequencer shootSequence = new Sequencer(List.of(
             () -> shooting = true,
             this::openGate,
-            () -> setIntakeMotorPower(-1),
+            () -> setIntakeMotorPower(-0.6),
+            () -> bootSequence.start(),
             () -> setIntakeMotorPower(0),
             this::closeGate,
             () -> shooting = false
     ), List.of(
-            0d, 0d, 0d, 1.5d, 0d, 0d
+            0d, 0d, 0d, 1.5d, 0.3d, 0.2d, 0d
     ));
+
 
 
     public void autoAdjustShooterParameters(){
@@ -68,6 +78,7 @@ public class Shooter extends Assembly {
         intakeMotor = hardwareMap.get(DcMotor.class, "intake");
 
         gateServo = hardwareMap.get(Servo.class, "gate");
+        bootKickerServo = hardwareMap.get(Servo.class, "boot");
 
 
         flywheelMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
@@ -135,6 +146,11 @@ public class Shooter extends Assembly {
         turret.mode = Turret.TRACKING_MODE;
     }
 
+    public void setBootkickerState(boolean state){
+        double pos = state ? KICK_BOOT_POS : IDLE_BOOT_POS;
+        bootKickerServo.setPosition(pos);
+    }
+
 
     public int turretMode(){
         return turret.mode;
@@ -153,6 +169,7 @@ public class Shooter extends Assembly {
         TagSize = turret.Ta;
 
         shootSequence.update();
+        bootSequence.update();
     }
 
 }

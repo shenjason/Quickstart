@@ -52,14 +52,19 @@ public class teleOpMain extends OpMode {
         );
 
 
+        if (gamepad1.aWasPressed()){
+            robot.idle();
+        }
+
         robot.intake(gamepad1.a);
 
         if (gamepad1.bWasPressed()){
             robot.shooter.autoAdjustShooterParameters();
+            robot.tracking();
         }
 
         if (gamepad1.yWasPressed()){
-            robot.shooter.Shoot();
+            robot.shoot();
         }
 
 
