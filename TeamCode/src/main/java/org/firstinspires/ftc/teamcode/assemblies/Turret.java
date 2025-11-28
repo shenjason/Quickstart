@@ -126,7 +126,7 @@ public class Turret extends Assembly {
     }
 
     public static double getAngle(double x1, double y1, double x2, double y2) {
-        return Math.atan2(x2 - x1,y2 - y1);
+        return Math.atan2(y2 - y1,x2 - x1);
     }
     public boolean isPointed(){
         return mode == IDLE_MODE || (Math.abs(Tx) <= 5.0 && isInCamera);

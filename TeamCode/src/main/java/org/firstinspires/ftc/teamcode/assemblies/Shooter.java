@@ -23,8 +23,8 @@ public class Shooter extends Assembly {
 
     final int SAMPLE_T = 100;
 
-    final double OPEN_GATE_POS = 0.8, CLOSE_GATE_POS = 1;
-    final double KICK_BOOT_POS = 0, IDLE_BOOT_POS = 1;
+    final double OPEN_GATE_POS = 0.85, CLOSE_GATE_POS = 1;
+    final double KICK_BOOT_POS = 0.3, IDLE_BOOT_POS = 0;
     DcMotor flywheelMotor, intakeMotor;
     Servo gateServo, bootKickerServo;
 
@@ -51,19 +51,19 @@ public class Shooter extends Assembly {
     public Sequencer shootSequence = new Sequencer(List.of(
             () -> shooting = true,
             this::openGate,
-            () -> setIntakeMotorPower(-0.6),
+            () -> setIntakeMotorPower(-1),
             () -> bootSequence.start(),
             () -> setIntakeMotorPower(0),
-            this::closeGate,
-            () -> shooting = false
+            () -> shooting = false,
+            this::closeGate
     ), List.of(
-            0d, 0d, 0d, 1.5d, 0.3d, 0.2d, 0d
+            0d, 0d, 0d, 1.5d, 0.3d, 0d, 0.5d
     ));
 
 
 
     public void autoAdjustShooterParameters(){
-        setFlywheelRPM(TagSize * 0.02d + 60);
+        setFlywheelRPM(2800);
     }
 
 

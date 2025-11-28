@@ -59,7 +59,6 @@ public class teleOpMain extends OpMode {
         robot.intake(gamepad1.a);
 
         if (gamepad1.bWasPressed()){
-            robot.shooter.autoAdjustShooterParameters();
             robot.tracking();
         }
 

@@ -27,10 +27,13 @@ public class Robot extends Assembly {
 
     public void idle(){
         shooter.idleMode();
+        shooter.setFlywheelRPM(0);
     }
 
     public void tracking(){
-        shooter.trackingMode();
+
+//        shooter.trackingMode();
+        shooter.autoAdjustShooterParameters();
     }
     public void intake(boolean state){
         if (shooter.shooting) return;
