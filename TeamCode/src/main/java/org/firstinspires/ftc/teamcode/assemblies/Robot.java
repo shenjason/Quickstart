@@ -22,6 +22,7 @@ public class Robot extends Assembly {
     }
 
     public void shoot(){
+        if (shooter.targetFlyWheelRPM <= 2000) return;
         shooter.Shoot();
     }
 
@@ -31,8 +32,7 @@ public class Robot extends Assembly {
     }
 
     public void tracking(){
-
-//        shooter.trackingMode();
+        shooter.trackingMode();
         shooter.autoAdjustShooterParameters();
     }
     public void intake(boolean state){
@@ -42,9 +42,7 @@ public class Robot extends Assembly {
             shooter.setIntakeMotorPower(-1);
             return;
         }
-
         shooter.setIntakeMotorPower(0);
-
     }
 
 
@@ -55,7 +53,6 @@ public class Robot extends Assembly {
 
     @Override
     public void update() {
-
         shooter.update();
     }
 }

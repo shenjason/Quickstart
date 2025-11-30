@@ -18,7 +18,7 @@ import org.opencv.core.Mat;
 
 
 public class Turret extends Assembly {
-    public double P=1,I=0,D=0;
+    public double P=0.6,I=0,D=0.06;
     public PIDcontroller turretController;
     public boolean isInCamera;
     private double targetRotation;
@@ -55,12 +55,10 @@ public class Turret extends Assembly {
 
         limelight.setPollRateHz(30);
 
+        turretController = new PIDcontroller(P, I, D, -0.6, 0.6);
+
         limelight.pipelineSwitch((side) ? BLUE_TARGET_LINE : RED_TARGET_LINE);
         targetPointX = (side) ? TARGETBLUEX : TARGETREDX;
-
-
-        turretController = new PIDcontroller(P, I, D, -1, 1);
-
     }
 
 
@@ -72,32 +70,34 @@ public class Turret extends Assembly {
         double angle = getAngle(cp.getX(),cp.getY(),targetPointX,TARGETY);
         Ta = 0; Tx = 0;
         double robotAngle = cp.getHeading();
-        isInCamera = limelightResultVaild(llResult);
+        isInCamera = llResult != null && llResult.isValid();
         if (isInCamera) {
-            Ta = llResult.getTx();
+            Ta = llResult.getTa();
             Tx = llResult.getTx();
         }
 
-        double diffAngle = (angle - robotAngle + Math.PI) % (2*Math.PI) - Math.PI;
-        targetRotation = diffAngle - Math.toRadians(Tx);
-        double currentRotation = (turretMotor.getCurrentPosition()/145.1d*0.16d*2d*Math.PI) - offsetAngle;
+        double diffAngle = getDiff(angle,robotAngle);
+        targetRotation = getDiff(diffAngle,Tx);
+        double currentRotation = (turretMotor.getCurrentPosition()/145.1d*0.16d*2d*Math.PI - offsetAngle);
 
         double clamped_target_rot = targetRotation;
-        if (Math.abs(targetRotation)>=Math.PI/2) clamped_target_rot = Math.PI/2*Math.signum(targetRotation);
+        if (Math.abs(targetRotation)>=Math.toRadians(80)) clamped_target_rot = Math.toRadians(80)*Math.signum(targetRotation);
 
         if (debug) turretController.p = P; turretController.i = I; turretController.d = D;
 
-        turretMotor.setPower(turretController.step((mode == Turret.TRACKING_MODE) ? clamped_target_rot : debugTargetAngle, currentRotation));
+        turretMotor.setPower(turretController.step((mode == Turret.TRACKING_MODE) ? -clamped_target_rot : debugTargetAngle, currentRotation));
 
         debugAddLine("Turret");
+        debugAddData("InFrame", isInCamera);
+        debugAddData("Mode", mode);
         debugAddData("PoseX", cp.getX());
         debugAddData("PoseY", cp.getY());
         debugAddData("Heading", Math.toDegrees(cp.getHeading()));
         debugAddData("globalTargetRotation", Math.toDegrees(angle));
         debugAddData("targetRotation",  Math.toDegrees(clamped_target_rot));
-//        debugAddData("Angle bot->tag approx",Math.toDegrees(diffAngle));
+        debugAddData("diff angle", diffAngle);
+        debugAddData("current angle",Math.toDegrees(currentRotation));
 
-        debugAddData("currentRotation", Math.toDegrees(currentRotation));
         debugAddData("isPointed",isPointed());
     }
 
@@ -128,7 +128,14 @@ public class Turret extends Assembly {
     public static double getAngle(double x1, double y1, double x2, double y2) {
         return Math.atan2(y2 - y1,x2 - x1);
     }
+    public static double getDirection(double angle1, double angle2){
+        return Math.signum((Math.sin(angle2)-Math.sin(angle1+Math.PI/2))*(Math.cos(angle1)-Math.cos(angle2)));
+    }
+    public static double getDiff(double angle1, double angle2){
+        return ((angle1-angle2+Math.toRadians(180))%Math.toRadians(360)-Math.toRadians(180));
+    }
     public boolean isPointed(){
-        return mode == IDLE_MODE || (Math.abs(Tx) <= 5.0 && isInCamera);
+//        return mode == IDLE_MODE || (Math.abs(Tx) <= 5.0 && isInCamera);
+        return true;
     }
 }

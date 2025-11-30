@@ -5,6 +5,7 @@ import com.bylazar.configurables.annotations.Configurable;
 import com.bylazar.telemetry.PanelsTelemetry;
 import com.bylazar.telemetry.TelemetryManager;
 import com.pedropathing.follower.Follower;
+import com.pedropathing.geometry.Pose;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
@@ -33,6 +34,8 @@ public class turretTest extends OpMode {
 
         follower = Constants.createFollower(hardwareMap);
         t = new Turret(hardwareMap, telemetry, follower, true, Assembly.SIDE_BLUE);
+
+        follower.setStartingPose(new Pose(0,0));
 
         t.mode = Turret.IDLE_MODE;
 

@@ -24,7 +24,6 @@ public class shooterPID extends OpMode {
     public static double P, I, D, TARGET_RPM;
     public static boolean LOAD = true;
 
-    public static double yawP = 0.05d;
 
     Shooter s;
 
@@ -48,7 +47,6 @@ public class shooterPID extends OpMode {
     public void loop() {
 
         s.flywheelP = P; s.flyWheelD = D; s.flyWheelI = I;
-        s.turret_yawP = yawP;
         s.setFlywheelRPM(TARGET_RPM);
 
         if (gamepad1.aWasPressed()){

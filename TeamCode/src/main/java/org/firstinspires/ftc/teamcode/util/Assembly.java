@@ -17,9 +17,10 @@ public abstract class Assembly {
     public Assembly(HardwareMap _hardwareMap, Telemetry _t, boolean _debug, boolean _side){
         t = _t;
         hardwareMap = _hardwareMap;
-        hardwareInit();
         debug = _debug;
         side = _side;
+
+        hardwareInit();
     }
 
     public abstract void hardwareInit();

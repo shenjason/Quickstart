@@ -10,9 +10,12 @@ import com.pedropathing.geometry.Pose;
 import com.pedropathing.paths.PathChain;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
-import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 
-@Autonomous(name = "Auto Blue", group = "Autonomous")
+import org.firstinspires.ftc.teamcode.assemblies.Robot;
+import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
+import org.firstinspires.ftc.teamcode.util.Assembly;
+
+@Autonomous(name = "Auto Blue", group = "Autonomous", preselectTeleOp = "TeleOpMain(Blue)")
 @Configurable // Panels
 public class autoblue extends OpMode {
 
@@ -21,22 +24,32 @@ public class autoblue extends OpMode {
     private int pathState; // Current autonomous path state (state machine)
     private Paths paths; // Paths defined in the Paths class
 
+    public Robot robot;
+
     @Override
     public void init() {
         panelsTelemetry = PanelsTelemetry.INSTANCE.getTelemetry();
 
         follower = Constants.createFollower(hardwareMap);
-        follower.setStartingPose(new Pose(72, 8, Math.toRadians(90)));
-
+        follower.setMaxPower(0.5);
+        follower.setMaxPowerScaling(0.5);
         paths = new Paths(follower); // Build paths
+
+        follower.setStartingPose(paths.startPose);
+
+        robot = new Robot(hardwareMap, telemetry,follower,false, Assembly.SIDE_BLUE);
 
         panelsTelemetry.debug("Status", "Initialized");
         panelsTelemetry.update(telemetry);
+
+        pathState = 0;
+
     }
 
     @Override
     public void loop() {
         follower.update(); // Update Pedro Pathing
+        robot.update();
         pathState = autonomousPathUpdate(); // Update autonomous state machine
 
         // Log values to Panels and Driver Station
@@ -48,97 +61,106 @@ public class autoblue extends OpMode {
     }
 
     public static class Paths {
+        public Pose startPose = new Pose(26.200, 130.000, Math.toRadians(52));
+        public Pose shoot = new Pose(44.0,111.0, Math.toRadians(180));
+        public Pose ready1 = new Pose(44.0,84.0,  Math.toRadians(180));
+        public Pose load1 = new Pose(26.0,84.0, Math.toRadians(180));
+        public Pose ready2 = new Pose(44.0,60.0, Math.toRadians(180));
+        public Pose load2 = new Pose(26.0, 60.0,  Math.toRadians(180));
+        public Pose ready3 = new Pose(44.0,36.0, Math.toRadians(180));
+        public Pose load3 = new Pose(26.0,36.0, Math.toRadians(180));
+        public Pose end = new Pose(36.0,12.0, Math.toRadians(180));
 
-        public PathChain Path1, Path2, Path3, Path4, Path5, Path6, Path7, Path8, Path9, Path10, Path11;
+        public PathChain start_shoot, shoot_ready1, ready1_load1, load1_shoot, shoot_ready2,ready2_load2, load2_shoot, shoot_ready3, ready3_load3, load3_shoot, shoot_end;
 
         public Paths(Follower follower) {
-            Path1 = follower
+            start_shoot = follower
                     .pathBuilder()
                     .addPath(
-                            new BezierLine(new Pose(26.200, 130.000), new Pose(44.000, 111.000))
+                            new BezierLine(startPose, shoot)
                     )
                     .setLinearHeadingInterpolation(Math.toRadians(52), Math.toRadians(180))
                     .build();
 
-            Path2 = follower
+            shoot_ready1 = follower
                     .pathBuilder()
                     .addPath(
-                            new BezierLine(new Pose(44.000, 111.000), new Pose(44.000, 84.000))
+                            new BezierLine(shoot, ready1)
                     )
                     .setConstantHeadingInterpolation(Math.toRadians(180))
                     .build();
 
-            Path3 = follower
+            ready1_load1 = follower
                     .pathBuilder()
                     .addPath(
-                            new BezierLine(new Pose(44.000, 84.000), new Pose(18.000, 84.000))
+                            new BezierLine(ready1, load1)
                     )
                     .setConstantHeadingInterpolation(Math.toRadians(180))
                     .build();
 
-            Path4 = follower
+            load1_shoot = follower
                     .pathBuilder()
                     .addPath(
-                            new BezierLine(new Pose(18.000, 84.000), new Pose(44.000, 111.000))
+                            new BezierLine(load1, shoot)
                     )
                     .setConstantHeadingInterpolation(Math.toRadians(180))
                     .build();
 
-            Path5 = follower
+            shoot_ready2 = follower
                     .pathBuilder()
                     .addPath(
-                            new BezierLine(new Pose(44.000, 111.000), new Pose(44.000, 60.000))
+                            new BezierLine(shoot, ready2)
                     )
                     .setConstantHeadingInterpolation(Math.toRadians(180))
                     .build();
 
-            Path6 = follower
+            ready2_load2 = follower
                     .pathBuilder()
                     .addPath(
-                            new BezierLine(new Pose(44.000, 60.000), new Pose(18.000, 60.000))
+                            new BezierLine(ready2,load2)
                     )
                     .setConstantHeadingInterpolation(Math.toRadians(180))
                     .build();
 
-            Path7 = follower
+            load2_shoot = follower
                     .pathBuilder()
                     .addPath(
-                            new BezierLine(new Pose(18.000, 60.000), new Pose(44.000, 111.000))
+                            new BezierLine(load2,shoot)
                     )
                     .setConstantHeadingInterpolation(Math.toRadians(180))
                     .build();
 
-            Path8 = follower
+            shoot_ready3 = follower
                     .pathBuilder()
                     .addPath(
-                            new BezierLine(new Pose(44.000, 111.000), new Pose(44.000, 36.000))
+                            new BezierLine(shoot,ready3)
                     )
                     .setConstantHeadingInterpolation(Math.toRadians(180))
                     .build();
 
-            Path9 = follower
+            ready3_load3 = follower
                     .pathBuilder()
                     .addPath(
-                            new BezierLine(new Pose(44.000, 36.000), new Pose(19.000, 36.000))
+                            new BezierLine(ready3,load3)
                     )
                     .setConstantHeadingInterpolation(Math.toRadians(180))
                     .build();
 
-            Path10 = follower
+            load3_shoot = follower
                     .pathBuilder()
                     .addPath(
-                            new BezierLine(new Pose(19.000, 36.000), new Pose(44.000, 111.000))
+                            new BezierLine(load3,shoot)
                     )
                     .setConstantHeadingInterpolation(Math.toRadians(180))
                     .build();
 
-            Path11 = follower
+            shoot_end = follower
                     .pathBuilder()
                     .addPath(
                             new BezierCurve(
-                                    new Pose(44.000, 111.000),
+                                    new Pose(shoot.getX(), shoot.getY()),
                                     new Pose(0.000, 60.000),
-                                    new Pose(36.000, 12.000)
+                                    new Pose(end.getX(), end.getY())
                             )
                     )
                     .setConstantHeadingInterpolation(Math.toRadians(180))
@@ -147,9 +169,99 @@ public class autoblue extends OpMode {
     }
 
     public int autonomousPathUpdate() {
-        // Add your state machine Here
+        switch(pathState){
+            case 0:
+                //set turret angle to 45 degrees
+                robot.tracking();
+                follower.followPath(paths.start_shoot, true);
+                pathState++;
+                break;
+            case 1:
+            case 5:
+            case 9:
+                if (!follower.isBusy()){
+                    robot.shoot();
+                    pathState++;
+                }
+                break;
+            case 2:
+                if (!robot.shooter.shooting){
+                    follower.followPath(paths.shoot_ready1,true);
+                    pathState++;
+                }
+                break;
+            case 3:
+                if (!follower.isBusy()){
+                    robot.intake(true);
+                    follower.followPath(paths.ready1_load1,true);
+                    pathState++;
+                }
+                break;
+            case 4:
+                if (!follower.isBusy()){
+                    robot.intake(false);
+                    follower.followPath(paths.load1_shoot,true);
+                    pathState++;
+                }
+                break;
+            case 6:
+                if(!robot.shooter.shooting){
+                    follower.followPath(paths.shoot_ready2,true);
+                    pathState++;
+                }
+                break;
+            case 7:
+                if (!follower.isBusy()){
+                    robot.intake(true);
+                    follower.followPath(paths.ready2_load2,true);
+                    pathState++;
+                }
+                break;
+            case 8:
+                if(!follower.isBusy()){
+                    robot.intake(false);
+                    follower.followPath(paths.load2_shoot,true);
+                    pathState++;
+                }
+                break;
+            case 10:
+                if(!robot.shooter.shooting){
+                    follower.followPath(paths.shoot_ready3,true);
+                    pathState++;
+                }
+                break;
+            case 11:
+
+                if(!follower.isBusy()){
+                    robot.intake(true);
+                    follower.followPath(paths.ready3_load3,true);
+                    pathState++;
+                }
+                break;
+            case 12:
+                if(!follower.isBusy()){
+                    robot.intake(false);
+                    follower.followPath(paths.load3_shoot,true);
+                    pathState++;
+                }
+                break;
+            case 13:
+                if(!follower.isBusy()){
+                    // set turret angle to 0 degrees
+                    robot.shoot();
+                    pathState++;
+                }
+                break;
+            case 14:
+                if(!robot.shooter.shooting){
+                    follower.followPath(paths.shoot_end,true);
+                    pathState = -1;
+                }
+                break;
+        }
         // Access paths with paths.pathName
         // Refer to the Pedro Pathing Docs (Auto Example) for an example state machine
+
         return pathState;
     }
 }

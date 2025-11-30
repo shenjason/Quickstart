@@ -18,13 +18,11 @@ import org.firstinspires.ftc.teamcode.util.PIDcontroller;
 import org.firstinspires.ftc.teamcode.util.Sequencer;
 
 public class Shooter extends Assembly {
-    public double flywheelP = 2, flyWheelI = 0.005, flyWheelD = 1;
-    public double turret_yawP = 0.05d;
-
+    public double flywheelP = 2, flyWheelI = 0.002, flyWheelD = 1;
     final int SAMPLE_T = 100;
 
     final double OPEN_GATE_POS = 0.85, CLOSE_GATE_POS = 1;
-    final double KICK_BOOT_POS = 0.3, IDLE_BOOT_POS = 0;
+    final double KICK_BOOT_POS = 0.4, IDLE_BOOT_POS = 0;
     DcMotor flywheelMotor, intakeMotor;
     Servo gateServo, bootKickerServo;
 
@@ -51,7 +49,7 @@ public class Shooter extends Assembly {
     public Sequencer shootSequence = new Sequencer(List.of(
             () -> shooting = true,
             this::openGate,
-            () -> setIntakeMotorPower(-1),
+            () -> setIntakeMotorPower(-0.9),
             () -> bootSequence.start(),
             () -> setIntakeMotorPower(0),
             () -> shooting = false,
