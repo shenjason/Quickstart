@@ -8,6 +8,7 @@ import com.pedropathing.geometry.BezierCurve;
 import com.pedropathing.geometry.BezierLine;
 import com.pedropathing.geometry.Pose;
 import com.pedropathing.paths.PathChain;
+import com.pedropathing.util.Timer;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 
@@ -26,24 +27,29 @@ public class autoblue extends OpMode {
 
     public Robot robot;
 
+    public double SPEED = 0.8;
+    Timer timer;
+
     @Override
     public void init() {
         panelsTelemetry = PanelsTelemetry.INSTANCE.getTelemetry();
 
         follower = Constants.createFollower(hardwareMap);
-        follower.setMaxPower(0.5);
-        follower.setMaxPowerScaling(0.5);
+
+        robot = new Robot(hardwareMap, telemetry,follower,true, Assembly.SIDE_BLUE);
+
+        follower.setMaxPower(SPEED);
+        follower.setMaxPowerScaling(SPEED);
         paths = new Paths(follower); // Build paths
 
         follower.setStartingPose(paths.startPose);
+        robot.intake(false);
 
-        robot = new Robot(hardwareMap, telemetry,follower,false, Assembly.SIDE_BLUE);
 
         panelsTelemetry.debug("Status", "Initialized");
-        panelsTelemetry.update(telemetry);
 
         pathState = 0;
-
+        timer = new Timer();
     }
 
     @Override
@@ -62,13 +68,13 @@ public class autoblue extends OpMode {
 
     public static class Paths {
         public Pose startPose = new Pose(26.200, 130.000, Math.toRadians(52));
-        public Pose shoot = new Pose(44.0,111.0, Math.toRadians(180));
+        public Pose shoot = new Pose(42,102, Math.toRadians(180));
         public Pose ready1 = new Pose(44.0,84.0,  Math.toRadians(180));
-        public Pose load1 = new Pose(26.0,84.0, Math.toRadians(180));
+        public Pose load1 = new Pose(24.0,84.0, Math.toRadians(180));
         public Pose ready2 = new Pose(44.0,60.0, Math.toRadians(180));
-        public Pose load2 = new Pose(26.0, 60.0,  Math.toRadians(180));
-        public Pose ready3 = new Pose(44.0,36.0, Math.toRadians(180));
-        public Pose load3 = new Pose(26.0,36.0, Math.toRadians(180));
+        public Pose load2 = new Pose(24.0, 60.0,  Math.toRadians(180));
+        public Pose ready3 = new Pose(44.0,38.0, Math.toRadians(180));
+        public Pose load3 = new Pose(24.0,38.0, Math.toRadians(180));
         public Pose end = new Pose(36.0,12.0, Math.toRadians(180));
 
         public PathChain start_shoot, shoot_ready1, ready1_load1, load1_shoot, shoot_ready2,ready2_load2, load2_shoot, shoot_ready3, ready3_load3, load3_shoot, shoot_end;
@@ -157,11 +163,7 @@ public class autoblue extends OpMode {
             shoot_end = follower
                     .pathBuilder()
                     .addPath(
-                            new BezierCurve(
-                                    new Pose(shoot.getX(), shoot.getY()),
-                                    new Pose(0.000, 60.000),
-                                    new Pose(end.getX(), end.getY())
-                            )
+                            new BezierCurve(shoot, end)
                     )
                     .setConstantHeadingInterpolation(Math.toRadians(180))
                     .build();
@@ -172,14 +174,16 @@ public class autoblue extends OpMode {
         switch(pathState){
             case 0:
                 //set turret angle to 45 degrees
-                robot.tracking();
+                robot.shooter.setFlywheelRPM(2800);
+                robot.shooter.turret.debugTargetAngle = Math.toRadians(40);
                 follower.followPath(paths.start_shoot, true);
                 pathState++;
                 break;
             case 1:
             case 5:
             case 9:
-                if (!follower.isBusy()){
+            case 13:
+                if (!follower.isBusy() && robot.shooter.canShoot()){
                     robot.shoot();
                     pathState++;
                 }
@@ -193,6 +197,7 @@ public class autoblue extends OpMode {
             case 3:
                 if (!follower.isBusy()){
                     robot.intake(true);
+                    follower.setMaxPower(0.4);
                     follower.followPath(paths.ready1_load1,true);
                     pathState++;
                 }
@@ -200,6 +205,7 @@ public class autoblue extends OpMode {
             case 4:
                 if (!follower.isBusy()){
                     robot.intake(false);
+                    follower.setMaxPower(SPEED);
                     follower.followPath(paths.load1_shoot,true);
                     pathState++;
                 }
@@ -213,6 +219,7 @@ public class autoblue extends OpMode {
             case 7:
                 if (!follower.isBusy()){
                     robot.intake(true);
+                    follower.setMaxPower(0.4);
                     follower.followPath(paths.ready2_load2,true);
                     pathState++;
                 }
@@ -220,6 +227,7 @@ public class autoblue extends OpMode {
             case 8:
                 if(!follower.isBusy()){
                     robot.intake(false);
+                    follower.setMaxPower(SPEED);
                     follower.followPath(paths.load2_shoot,true);
                     pathState++;
                 }
@@ -234,6 +242,7 @@ public class autoblue extends OpMode {
 
                 if(!follower.isBusy()){
                     robot.intake(true);
+                    follower.setMaxPower(0.4);
                     follower.followPath(paths.ready3_load3,true);
                     pathState++;
                 }
@@ -241,20 +250,22 @@ public class autoblue extends OpMode {
             case 12:
                 if(!follower.isBusy()){
                     robot.intake(false);
+                    follower.setMaxPower(SPEED);
                     follower.followPath(paths.load3_shoot,true);
-                    pathState++;
-                }
-                break;
-            case 13:
-                if(!follower.isBusy()){
-                    // set turret angle to 0 degrees
-                    robot.shoot();
                     pathState++;
                 }
                 break;
             case 14:
                 if(!robot.shooter.shooting){
+                    robot.shooter.offShooter();
                     follower.followPath(paths.shoot_end,true);
+                    pathState++;
+                    timer.resetTimer();
+                }
+                break;
+            case 15:
+                if (timer.getElapsedTimeSeconds() > 1){
+                    robot.shooter.turret.debugTargetAngle = 0;
                     pathState = -1;
                 }
                 break;

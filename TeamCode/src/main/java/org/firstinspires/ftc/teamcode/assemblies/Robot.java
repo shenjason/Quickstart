@@ -19,6 +19,7 @@ public class Robot extends Assembly {
         shooter = new Shooter(_hardwareMap, _t, f, _debug, _side);
 
         idle();
+        intake(false);
     }
 
     public void shoot(){

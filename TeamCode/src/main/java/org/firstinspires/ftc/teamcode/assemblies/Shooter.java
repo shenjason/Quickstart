@@ -55,13 +55,19 @@ public class Shooter extends Assembly {
             () -> shooting = false,
             this::closeGate
     ), List.of(
-            0d, 0d, 0d, 1.5d, 0.3d, 0d, 0.5d
+            0d, 0d, 0d, 1d, 0.3d, 0.5d, 0.5d
     ));
 
 
 
     public void autoAdjustShooterParameters(){
-        setFlywheelRPM(2800);
+        double RPM = Math.round(-4.31574*turret.Ta+39.1522) * 100;
+
+
+        if (turret.Ta <= 0) RPM = 2800;
+        if (RPM > 3800) RPM = 3800;
+
+        setFlywheelRPM(RPM);
     }
 
 
@@ -115,7 +121,7 @@ public class Shooter extends Assembly {
     }
 
     public boolean canShoot(){
-        return turret.isPointed() && atTargetFlywheelRPM();
+        return atTargetFlywheelRPM();
     }
 
     public void Shoot(){
@@ -162,6 +168,7 @@ public class Shooter extends Assembly {
         debugAddData("flyWheelRPM", flywheelRPM);
         debugAddData("RPMError", flywheelPID.getE());
         debugAddData("flywheelPowerOutput", flywheelPID.currentOutput);
+        debugAddData("TargetRPM", targetFlyWheelRPM);
 
         if (turret_active) turret.update();
         TagSize = turret.Ta;

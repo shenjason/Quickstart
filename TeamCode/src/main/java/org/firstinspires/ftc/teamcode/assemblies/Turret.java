@@ -59,6 +59,7 @@ public class Turret extends Assembly {
 
         limelight.pipelineSwitch((side) ? BLUE_TARGET_LINE : RED_TARGET_LINE);
         targetPointX = (side) ? TARGETBLUEX : TARGETREDX;
+        limelight.start();
     }
 
 
@@ -68,16 +69,16 @@ public class Turret extends Assembly {
         LLResult llResult = limelight.getLatestResult();
         Pose cp = follower.getPose();
         double angle = getAngle(cp.getX(),cp.getY(),targetPointX,TARGETY);
-        Ta = 0; Tx = 0;
+        Tx = 0;
         double robotAngle = cp.getHeading();
-        isInCamera = llResult != null && llResult.isValid();
+        isInCamera = limelightResultVaild(llResult);
         if (isInCamera) {
             Ta = llResult.getTa();
             Tx = llResult.getTx();
         }
 
         double diffAngle = getDiff(angle,robotAngle);
-        targetRotation = getDiff(diffAngle,Tx);
+        targetRotation = diffAngle - Math.toRadians(Tx);
         double currentRotation = (turretMotor.getCurrentPosition()/145.1d*0.16d*2d*Math.PI - offsetAngle);
 
         double clamped_target_rot = targetRotation;
@@ -97,6 +98,8 @@ public class Turret extends Assembly {
         debugAddData("targetRotation",  Math.toDegrees(clamped_target_rot));
         debugAddData("diff angle", diffAngle);
         debugAddData("current angle",Math.toDegrees(currentRotation));
+        debugAddData("TagSize", Ta);
+
 
         debugAddData("isPointed",isPointed());
     }
@@ -128,14 +131,11 @@ public class Turret extends Assembly {
     public static double getAngle(double x1, double y1, double x2, double y2) {
         return Math.atan2(y2 - y1,x2 - x1);
     }
-    public static double getDirection(double angle1, double angle2){
-        return Math.signum((Math.sin(angle2)-Math.sin(angle1+Math.PI/2))*(Math.cos(angle1)-Math.cos(angle2)));
-    }
     public static double getDiff(double angle1, double angle2){
         return ((angle1-angle2+Math.toRadians(180))%Math.toRadians(360)-Math.toRadians(180));
     }
     public boolean isPointed(){
-//        return mode == IDLE_MODE || (Math.abs(Tx) <= 5.0 && isInCamera);
-        return true;
+        return mode == IDLE_MODE || (Math.abs(Tx) <= 5.0 && isInCamera);
+//        return true;
     }
 }

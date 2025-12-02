@@ -31,8 +31,6 @@ public class teleOpMain extends OpMode {
         robot = new Robot(hardwareMap, telemetry, follower, DEBUG, SIDE);
 
         follower.setStartingPose(new Pose(75, 75));
-        follower.updateDrivetrain();
-
 
     }
 
