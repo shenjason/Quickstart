@@ -30,7 +30,7 @@ public class teleOpMain extends OpMode {
         follower = Constants.createFollower(hardwareMap);
         robot = new Robot(hardwareMap, telemetry, follower, DEBUG, SIDE);
 
-        follower.setStartingPose(new Pose(75, 75));
+        follower.setStartingPose(new Pose(36, 12, Math.toRadians(180)));
 
     }
 
@@ -69,7 +69,7 @@ public class teleOpMain extends OpMode {
             }
         }
 
-        if (gamepad1.bWasPressed()){
+        if (gamepad1.bWasPressed() && !robot.shooter.shooting){
             robot.shoot();
         }
 

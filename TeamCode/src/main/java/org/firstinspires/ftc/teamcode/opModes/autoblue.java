@@ -174,8 +174,8 @@ public class autoblue extends OpMode {
         switch(pathState){
             case 0:
                 //set turret angle to 45 degrees
-                robot.shooter.setFlywheelRPM(2800);
-                robot.shooter.turret.debugTargetAngle = Math.toRadians(40);
+                robot.shooter.setFlywheelRPM(2700);
+                robot.shooter.turret.debugTargetAngle = Math.toRadians(38);
                 follower.followPath(paths.start_shoot, true);
                 pathState++;
                 break;

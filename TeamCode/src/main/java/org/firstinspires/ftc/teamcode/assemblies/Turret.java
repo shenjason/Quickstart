@@ -82,7 +82,7 @@ public class Turret extends Assembly {
         double currentRotation = (turretMotor.getCurrentPosition()/145.1d*0.16d*2d*Math.PI - offsetAngle);
 
         double clamped_target_rot = targetRotation;
-        if (Math.abs(targetRotation)>=Math.toRadians(80)) clamped_target_rot = Math.toRadians(80)*Math.signum(targetRotation);
+        if (Math.abs(targetRotation)>=Math.toRadians(70)) clamped_target_rot = Math.toRadians(70)*Math.signum(targetRotation);
 
         if (debug) turretController.p = P; turretController.i = I; turretController.d = D;
 
@@ -97,6 +97,7 @@ public class Turret extends Assembly {
         debugAddData("globalTargetRotation", Math.toDegrees(angle));
         debugAddData("targetRotation",  Math.toDegrees(clamped_target_rot));
         debugAddData("diff angle", diffAngle);
+        debugAddData("currentPos", turretMotor.getCurrentPosition());
         debugAddData("current angle",Math.toDegrees(currentRotation));
         debugAddData("TagSize", Ta);
 

@@ -49,7 +49,7 @@ public class Shooter extends Assembly {
     public Sequencer shootSequence = new Sequencer(List.of(
             () -> shooting = true,
             this::openGate,
-            () -> setIntakeMotorPower(-0.9),
+            () -> setIntakeMotorPower(-1),
             () -> bootSequence.start(),
             () -> setIntakeMotorPower(0),
             () -> shooting = false,
@@ -64,10 +64,10 @@ public class Shooter extends Assembly {
         double RPM = Math.round(-4.31574*turret.Ta+39.1522) * 100;
 
 
-        if (turret.Ta <= 0) RPM = 2800;
+        if (!turret.isInCamera) RPM = 2800;
         if (RPM > 3800) RPM = 3800;
 
-        setFlywheelRPM(RPM);
+        setFlywheelRPM(3000);
     }
 
 
@@ -117,7 +117,7 @@ public class Shooter extends Assembly {
     }
 
     public boolean atTargetFlywheelRPM(){
-        return Math.abs(targetFlyWheelRPM-flywheelRPM) < 150;
+        return Math.abs(targetFlyWheelRPM-flywheelRPM) < 100;
     }
 
     public boolean canShoot(){
