@@ -31,7 +31,7 @@ public class Turret extends Assembly {
 
     private double targetPointX;
 
-    private static double  TARGETBLUEX=11, TARGETY=137.1, TARGETREDX=144-TARGETBLUEX;
+    private final double TARGETBLUEX=0, TARGETY=144, TARGETREDX=144-TARGETBLUEX;
 
     public final static int GPP = 0, PGP = 1, PPG = 2, BLUE_TARGET_LINE = 3, RED_TARGET_LINE = 4, TRACKING_MODE = 0, IDLE_MODE = 1;
     public int mode = IDLE_MODE;
@@ -69,7 +69,6 @@ public class Turret extends Assembly {
         LLResult llResult = limelight.getLatestResult();
         Pose cp = follower.getPose();
         double angle = getAngle(cp.getX(),cp.getY(),targetPointX,TARGETY);
-        Tx = 0;
         double robotAngle = cp.getHeading();
         isInCamera = limelightResultVaild(llResult);
         if (isInCamera) {

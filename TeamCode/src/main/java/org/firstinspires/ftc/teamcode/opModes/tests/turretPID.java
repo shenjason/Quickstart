@@ -15,7 +15,7 @@ import org.firstinspires.ftc.teamcode.util.Assembly;
 
 @Configurable
 @TeleOp(name="TurretPID", group = "Tests")
-public class turretTest extends OpMode {
+public class turretPID extends OpMode {
     TelemetryManager telemetryManager;
 
 
