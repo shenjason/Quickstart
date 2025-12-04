@@ -18,7 +18,7 @@ import org.firstinspires.ftc.teamcode.util.PIDcontroller;
 import org.firstinspires.ftc.teamcode.util.Sequencer;
 
 public class Shooter extends Assembly {
-    public double flywheelP = 12, flyWheelI = 0.005, flyWheelD = 1;
+    public double flywheelP = 12, flyWheelI = 0.005, flyWheelD = 1.2;
     final int SAMPLE_T = 100;
 
     final double OPEN_GATE_POS = 0.85, CLOSE_GATE_POS = 1;
@@ -99,9 +99,9 @@ public class Shooter extends Assembly {
     void calcFlyWheelRPM(){
         if (flywheelRPMSampleTimer.getElapsedTime() < SAMPLE_T) return;
 
-        if (debug) {
-            flywheelPID.p = flywheelP; flywheelPID.i = flyWheelI; flywheelPID.d = flyWheelD;
-        }
+
+        flywheelPID.p = flywheelP; flywheelPID.i = flyWheelI; flywheelPID.d = flyWheelD;
+
 
         flywheelRPM = ((flywheelMotor.getCurrentPosition() - prevFlyWheelPos) / 28d)
                 / (flywheelRPMSampleTimer.getElapsedTime() / 60000d);

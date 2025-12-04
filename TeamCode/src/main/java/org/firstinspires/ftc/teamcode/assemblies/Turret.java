@@ -18,7 +18,7 @@ import org.opencv.core.Mat;
 
 
 public class Turret extends Assembly {
-    public double P=0.7,I=0.0001,D=0.07;
+    public double P=0.7,I=0.0002,D=0.07;
     public PIDcontroller turretController;
     public boolean isInCamera;
     private double targetRotation;
@@ -84,7 +84,7 @@ public class Turret extends Assembly {
         double clamped_target_rot = targetRotation;
         if (Math.abs(targetRotation)>=Math.toRadians(70)) clamped_target_rot = Math.toRadians(70)*Math.signum(targetRotation);
 
-        if (debug) turretController.p = P; turretController.i = I; turretController.d = D;
+        turretController.p = P; turretController.i = I; turretController.d = D;
 
         turretMotor.setPower(turretController.step((mode == Turret.TRACKING_MODE) ? -clamped_target_rot : debugTargetAngle, currentRotation));
 
@@ -137,6 +137,5 @@ public class Turret extends Assembly {
     }
     public boolean isPointed(){
         return mode == IDLE_MODE || (Math.abs(Tx) <= 5.0 && isInCamera);
-//        return true;
     }
 }

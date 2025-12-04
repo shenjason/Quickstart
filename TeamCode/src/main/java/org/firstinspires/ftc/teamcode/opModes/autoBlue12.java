@@ -16,19 +16,22 @@ import org.firstinspires.ftc.teamcode.assemblies.Robot;
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 import org.firstinspires.ftc.teamcode.util.Assembly;
 
-@Autonomous(name = "Auto Blue", group = "Autonomous", preselectTeleOp = "TeleOpMain(Blue)")
+@Autonomous(name = "Auto Blue (12 artifact)", group = "Autonomous", preselectTeleOp = "TeleOpMain(Blue)")
 @Configurable // Panels
-public class autoblue extends OpMode {
+public class autoBlue12 extends OpMode {
 
+    public static boolean SIDE = Assembly.SIDE_BLUE;
     private TelemetryManager panelsTelemetry; // Panels Telemetry instance
     public Follower follower; // Pedro Pathing follower instance
     private int pathState; // Current autonomous path state (state machine)
     private Paths paths; // Paths defined in the Paths class
 
     public Robot robot;
-
-    public double SPEED = 0.8;
+    public static double SPEED = 0.8;
     Timer timer;
+
+    public void setSIDE(){}
+
 
     @Override
     public void init() {
@@ -36,10 +39,13 @@ public class autoblue extends OpMode {
 
         follower = Constants.createFollower(hardwareMap);
 
-        robot = new Robot(hardwareMap, telemetry,follower,true, Assembly.SIDE_BLUE);
+        setSIDE();
+
+        robot = new Robot(hardwareMap, telemetry,follower,true, SIDE);
 
         follower.setMaxPower(SPEED);
         follower.setMaxPowerScaling(SPEED);
+
         paths = new Paths(follower); // Build paths
 
         follower.setStartingPose(paths.startPose);
@@ -63,19 +69,21 @@ public class autoblue extends OpMode {
         panelsTelemetry.debug("X", follower.getPose().getX());
         panelsTelemetry.debug("Y", follower.getPose().getY());
         panelsTelemetry.debug("Heading", follower.getPose().getHeading());
-        panelsTelemetry.update(telemetry);
+
+        panelsTelemetry.update();
+        telemetry.update();
     }
 
     public static class Paths {
-        public Pose startPose = new Pose(26.200, 130.000, Math.toRadians(52));
-        public Pose shoot = new Pose(42,102, Math.toRadians(180));
-        public Pose ready1 = new Pose(44.0,84.0,  Math.toRadians(180));
-        public Pose load1 = new Pose(24.0,84.0, Math.toRadians(180));
-        public Pose ready2 = new Pose(44.0,60.0, Math.toRadians(180));
-        public Pose load2 = new Pose(26.0, 60.0,  Math.toRadians(180));
-        public Pose ready3 = new Pose(44.0,36.0, Math.toRadians(180));
-        public Pose load3 = new Pose(24.0,36.0, Math.toRadians(180));
-        public Pose end = new Pose(36.0,12.0, Math.toRadians(180));
+        public Pose startPose = x(new Pose(26.200, 130.000, Math.toRadians(52)));
+        public Pose shoot = x(new Pose(42,102, Math.toRadians(180)));
+        public Pose ready1 = x(new Pose(44.0,84.0,  Math.toRadians(180)));
+        public Pose load1 = x(new Pose(24.0,84.0, Math.toRadians(180)));
+        public Pose ready2 = x(new Pose(44.0,60.0, Math.toRadians(180)));
+        public Pose load2 = x(new Pose(26.0, 60.0,  Math.toRadians(180)));
+        public Pose ready3 = x(new Pose(44.0,36.0, Math.toRadians(180)));
+        public Pose load3 = x(new Pose(24.0,36.0, Math.toRadians(180)));
+        public Pose end = x(new Pose(36.0,12.0, Math.toRadians(180)));
 
         public PathChain start_shoot, shoot_ready1, ready1_load1, load1_shoot, shoot_ready2,ready2_load2, load2_shoot, shoot_ready3, ready3_load3, load3_shoot, shoot_end;
 
@@ -167,6 +175,10 @@ public class autoblue extends OpMode {
                     )
                     .setConstantHeadingInterpolation(Math.toRadians(180))
                     .build();
+        }
+
+        public Pose x(Pose p){
+            return (SIDE) ? p : new Pose(144-p.getX(), p.getY(), p.getHeading() + Math.toRadians(180));
         }
     }
 
