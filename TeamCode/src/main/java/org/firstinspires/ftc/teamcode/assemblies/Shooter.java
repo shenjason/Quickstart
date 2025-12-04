@@ -18,7 +18,7 @@ import org.firstinspires.ftc.teamcode.util.PIDcontroller;
 import org.firstinspires.ftc.teamcode.util.Sequencer;
 
 public class Shooter extends Assembly {
-    public double flywheelP = 2, flyWheelI = 0.002, flyWheelD = 1;
+    public double flywheelP = 12, flyWheelI = 0.005, flyWheelD = 1;
     final int SAMPLE_T = 100;
 
     final double OPEN_GATE_POS = 0.85, CLOSE_GATE_POS = 1;
@@ -67,7 +67,7 @@ public class Shooter extends Assembly {
         if (!turret.isInCamera) RPM = 2800;
         if (RPM > 3800) RPM = 3800;
 
-        setFlywheelRPM(3000);
+        setFlywheelRPM(RPM);
     }
 
 
@@ -117,7 +117,7 @@ public class Shooter extends Assembly {
     }
 
     public boolean atTargetFlywheelRPM(){
-        return Math.abs(targetFlyWheelRPM-flywheelRPM) < 100;
+        return Math.abs(targetFlyWheelRPM - flywheelRPM) < 100;
     }
 
     public boolean canShoot(){

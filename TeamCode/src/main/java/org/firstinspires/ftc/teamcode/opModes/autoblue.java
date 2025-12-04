@@ -72,9 +72,9 @@ public class autoblue extends OpMode {
         public Pose ready1 = new Pose(44.0,84.0,  Math.toRadians(180));
         public Pose load1 = new Pose(24.0,84.0, Math.toRadians(180));
         public Pose ready2 = new Pose(44.0,60.0, Math.toRadians(180));
-        public Pose load2 = new Pose(24.0, 60.0,  Math.toRadians(180));
-        public Pose ready3 = new Pose(44.0,38.0, Math.toRadians(180));
-        public Pose load3 = new Pose(24.0,38.0, Math.toRadians(180));
+        public Pose load2 = new Pose(26.0, 60.0,  Math.toRadians(180));
+        public Pose ready3 = new Pose(44.0,36.0, Math.toRadians(180));
+        public Pose load3 = new Pose(24.0,36.0, Math.toRadians(180));
         public Pose end = new Pose(36.0,12.0, Math.toRadians(180));
 
         public PathChain start_shoot, shoot_ready1, ready1_load1, load1_shoot, shoot_ready2,ready2_load2, load2_shoot, shoot_ready3, ready3_load3, load3_shoot, shoot_end;
@@ -174,8 +174,8 @@ public class autoblue extends OpMode {
         switch(pathState){
             case 0:
                 //set turret angle to 45 degrees
-                robot.shooter.setFlywheelRPM(2700);
-                robot.shooter.turret.debugTargetAngle = Math.toRadians(38);
+                robot.shooter.setFlywheelRPM(2650);
+                robot.shooter.turret.debugTargetAngle = Math.toRadians(40);
                 follower.followPath(paths.start_shoot, true);
                 pathState++;
                 break;

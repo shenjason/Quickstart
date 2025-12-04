@@ -18,7 +18,7 @@ import org.opencv.core.Mat;
 
 
 public class Turret extends Assembly {
-    public double P=0.6,I=0,D=0.06;
+    public double P=0.7,I=0.0001,D=0.07;
     public PIDcontroller turretController;
     public boolean isInCamera;
     private double targetRotation;
