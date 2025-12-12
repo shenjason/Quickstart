@@ -19,7 +19,7 @@ public class turretPID extends OpMode {
     TelemetryManager telemetryManager;
 
 
-    public static double P, I, D, TARGET_ROTATION;
+    public static double P, I, D, F, TARGET_ROTATION;
 
 
     public static boolean LOAD = false;
@@ -40,13 +40,13 @@ public class turretPID extends OpMode {
         t.mode = Turret.IDLE_MODE;
 
         if (LOAD){
-            P = t.P;I=t.I; D= t.D;
+            P = t.P;I=t.I; D= t.D; F=t.F;
         }
     }
 
     @Override
     public void loop() {
-        t.P = P;t.I = I; t.D = D;
+        t.P = P;t.I = I; t.D = D; t.F = F;
         t.debugTargetAngle = Math.toRadians(TARGET_ROTATION);
 
         telemetryManager.addData("Error", t.turretController.getE());

@@ -21,7 +21,7 @@ public class shooterPID extends OpMode {
 
     TelemetryManager telemetryManager;
     Follower follower;
-    public static double P, I, D, TARGET_RPM;
+    public static double P, I, D, F, TARGET_RPM;
     public static boolean LOAD = true;
 
 
@@ -37,7 +37,7 @@ public class shooterPID extends OpMode {
 
         s = new Shooter(hardwareMap, telemetry, follower, true, Assembly.SIDE_BLUE);
         if (LOAD){
-            P = s.flywheelP;I=s.flyWheelI; D= s.flyWheelD;
+            P = s.flywheelP;I=s.flyWheelI; D= s.flyWheelD; F=s.flyWheelF;
         }
 
         s.turret.mode = Turret.IDLE_MODE;
@@ -46,7 +46,7 @@ public class shooterPID extends OpMode {
     @Override
     public void loop() {
 
-        s.flywheelP = P; s.flyWheelD = D; s.flyWheelI = I;
+        s.flywheelP = P; s.flyWheelD = D; s.flyWheelI = I; s.flyWheelF = F;
         s.setFlywheelRPM(TARGET_RPM);
 
         if (gamepad1.aWasPressed()){

@@ -35,7 +35,7 @@ public class teleOpMain extends OpMode {
         follower = Constants.createFollower(hardwareMap);
         robot = new Robot(hardwareMap, telemetry, follower, DEBUG, SIDE);
 
-        follower.setStartingPose(new Pose((SIDE) ? 36 : 108, 12, (SIDE) ? Math.toRadians(180) : 0));
+        follower.setStartingPose(new Pose((SIDE) ? 36 : 108, 36, (SIDE) ? Math.toRadians(180) : 0));
 
         imu = hardwareMap.get(IMU.class, "imu");
 
@@ -81,7 +81,14 @@ public class teleOpMain extends OpMode {
         }
 
         if (gamepad1.dpadDownWasPressed()){
-            follower.setPose(new Pose(72, 72, imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.RADIANS) - ((SIDE) ? Math.toRadians(90) : Math.toRadians(-90))));
+            follower.setPose(new Pose(72, 72, -imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.RADIANS) + ((SIDE) ? Math.toRadians(0) : Math.toRadians(180))));
+        }
+
+        if (gamepad1.dpadRightWasPressed()){
+            robot.shooter.turret.offsetAngle += Math.toRadians(5);
+        }
+        if (gamepad1.dpadLeftWasPressed()){
+            robot.shooter.turret.offsetAngle -= Math.toRadians(5);
         }
 
 

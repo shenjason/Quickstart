@@ -18,10 +18,10 @@ import org.firstinspires.ftc.teamcode.util.PIDcontroller;
 import org.firstinspires.ftc.teamcode.util.Sequencer;
 
 public class Shooter extends Assembly {
-    public double flywheelP = 12, flyWheelI = 0.005, flyWheelD = 1.2;
-    final int SAMPLE_T = 100;
+    public double flywheelP = 7, flyWheelI = 0.01, flyWheelD = 0, flyWheelF = 0.0004;
+    final int SAMPLE_T = 50;
 
-    final double OPEN_GATE_POS = 0.85, CLOSE_GATE_POS = 1;
+    final double OPEN_GATE_POS = 0.85, CLOSE_GATE_POS = 0.95;
     final double KICK_BOOT_POS = 0.4, IDLE_BOOT_POS = 0;
     DcMotor flywheelMotor, intakeMotor;
     Servo gateServo, bootKickerServo;
@@ -61,9 +61,9 @@ public class Shooter extends Assembly {
 
 
     public void autoAdjustShooterParameters(){
-        double RPM = Math.round(-4.31574*turret.Ta+39.1522) * 100;
+        double RPM = Math.round(341.8766 * Math.pow(TagSize, -0.191797)) * 10;
 
-
+        if (shooting) return;
         if (!turret.isInCamera) RPM = 2800;
         if (RPM > 3800) RPM = 3800;
 
@@ -88,7 +88,7 @@ public class Shooter extends Assembly {
         flywheelMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         flywheelMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
 
-        flywheelPID = new PIDcontroller(flywheelP, flyWheelI, flyWheelD, 0, 1);
+        flywheelPID = new PIDcontroller(flywheelP, flyWheelI, flyWheelD, flyWheelF, 0, 1);
 
         flywheelRPMSampleTimer = new Timer();
 
@@ -100,7 +100,7 @@ public class Shooter extends Assembly {
         if (flywheelRPMSampleTimer.getElapsedTime() < SAMPLE_T) return;
 
 
-        flywheelPID.p = flywheelP; flywheelPID.i = flyWheelI; flywheelPID.d = flyWheelD;
+        flywheelPID.p = flywheelP; flywheelPID.i = flyWheelI; flywheelPID.d = flyWheelD; flywheelPID.f = flyWheelF;
 
 
         flywheelRPM = ((flywheelMotor.getCurrentPosition() - prevFlyWheelPos) / 28d)
@@ -108,7 +108,7 @@ public class Shooter extends Assembly {
         flywheelRPMSampleTimer.resetTimer();
         prevFlyWheelPos = flywheelMotor.getCurrentPosition();
         // *0.000167 same as /6000
-        flywheelMotor.setPower(flywheelPID.step(targetFlyWheelRPM * 0.000167d, flywheelRPM * 0.000167d));
+        flywheelMotor.setPower(flywheelPID.step(targetFlyWheelRPM / 6000, flywheelRPM / 6000));
     }
 
 

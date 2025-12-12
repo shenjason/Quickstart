@@ -16,9 +16,9 @@ import org.firstinspires.ftc.teamcode.assemblies.Robot;
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 import org.firstinspires.ftc.teamcode.util.Assembly;
 
-@Autonomous(name = "Auto Blue (12 artifact)", group = "Autonomous", preselectTeleOp = "TeleOpMain(Blue)")
+@Autonomous(name = "Auto Blue (12 artifact non-overflow)", group = "Autonomous", preselectTeleOp = "TeleOpMain(Blue)")
 @Configurable // Panels
-public class autoBlue12 extends OpMode {
+public class autoBlue12C extends OpMode {
 
     public static boolean SIDE = Assembly.SIDE_BLUE;
     private TelemetryManager panelsTelemetry; // Panels Telemetry instance
@@ -48,7 +48,7 @@ public class autoBlue12 extends OpMode {
 
         paths = new Paths(follower); // Build paths
 
-        follower.setStartingPose(paths.startPose);
+        follower.setStartingPose(paths.x(paths.startPose));
         robot.intake(false);
 
 
@@ -77,17 +77,17 @@ public class autoBlue12 extends OpMode {
     public static class Paths {
 
         public static double ROT = Math.toRadians(180);
-        public Pose startPose = x(new Pose(26.200, 130.000, Math.toRadians(52)));
-        public Pose shoot = x(new Pose(42,102, Math.toRadians(180)));
-        public Pose ready1 = x(new Pose(44.0,84.0,  Math.toRadians(180)));
-        public Pose load1 = x(new Pose(24.0,84.0, Math.toRadians(180)));
+        public Pose startPose = (new Pose(26.200, 130.000, Math.toRadians(52)));
+        public Pose shoot = (new Pose(42,102, Math.toRadians(180)));
+        public Pose ready1 = (new Pose(46.0,84.0,  Math.toRadians(180)));
+        public Pose load1 = (new Pose(22.0,84.0, Math.toRadians(180)));
 
-        public Pose gatePos = x(new Pose(18, 70));
-        public Pose ready2 = x(new Pose(44.0,60.0, Math.toRadians(180)));
-        public Pose load2 = x(new Pose(24.0, 60.0,  Math.toRadians(180)));
-        public Pose ready3 = x(new Pose(44.0,36.0, Math.toRadians(180)));
-        public Pose load3 = x(new Pose(24.0,36.0, Math.toRadians(180)));
-        public Pose end = x(new Pose(36.0,36.0, Math.toRadians(180)));
+        public Pose gatePos = (new Pose(19, 72, Math.toRadians(180)));
+        public Pose ready2 = (new Pose(46.0,60.0, Math.toRadians(180)));
+        public Pose load2 = (new Pose(25.0, 60.0,  Math.toRadians(180)));
+        public Pose ready3 = (new Pose(46.0,36.0, Math.toRadians(180)));
+        public Pose load3 = (new Pose(23.0,36.0, Math.toRadians(180)));
+        public Pose end = (new Pose(36.0,36.0, Math.toRadians(180)));
 
         public PathChain start_shoot, shoot_ready1, ready1_load1, load1_shoot, shoot_ready2,ready2_load2, load2_shoot, shoot_ready3, ready3_load3, load3_shoot, shoot_end, load1_gate, gate_shoot;
 
@@ -95,15 +95,15 @@ public class autoBlue12 extends OpMode {
             start_shoot = follower
                     .pathBuilder()
                     .addPath(
-                            new BezierLine(startPose, shoot)
+                            new BezierLine(x(startPose), x(shoot))
                     )
-                    .setLinearHeadingInterpolation(startPose.getHeading(), ROT)
+                    .setLinearHeadingInterpolation(SIDE ? startPose.getHeading() : 128, ROT)
                     .build();
 
             shoot_ready1 = follower
                     .pathBuilder()
                     .addPath(
-                            new BezierLine(shoot, ready1)
+                            new BezierLine(x(shoot), x(ready1))
                     )
                     .setConstantHeadingInterpolation(ROT)
                     .build();
@@ -111,7 +111,7 @@ public class autoBlue12 extends OpMode {
             ready1_load1 = follower
                     .pathBuilder()
                     .addPath(
-                            new BezierLine(ready1, load1)
+                            new BezierLine(x(ready1), x(load1))
                     )
                     .setConstantHeadingInterpolation(ROT)
                     .build();
@@ -119,7 +119,7 @@ public class autoBlue12 extends OpMode {
             load1_gate = follower
                     .pathBuilder()
                     .addPath(
-                            new BezierLine(load1, gatePos)
+                            new BezierCurve(x(load1), x(new Pose(32, 71)), x(gatePos))
                     )
                     .setConstantHeadingInterpolation(ROT)
                     .build();
@@ -127,7 +127,7 @@ public class autoBlue12 extends OpMode {
             gate_shoot = follower
                     .pathBuilder()
                     .addPath(
-                            new BezierLine(gatePos, shoot)
+                            new BezierLine(x(gatePos), x(shoot))
                     )
                     .setConstantHeadingInterpolation(ROT)
                     .build();
@@ -135,7 +135,7 @@ public class autoBlue12 extends OpMode {
             load1_shoot = follower
                     .pathBuilder()
                     .addPath(
-                            new BezierLine(load1, shoot)
+                            new BezierLine(x(load1), x(shoot))
                     )
                     .setConstantHeadingInterpolation(ROT)
                     .build();
@@ -143,7 +143,7 @@ public class autoBlue12 extends OpMode {
             shoot_ready2 = follower
                     .pathBuilder()
                     .addPath(
-                            new BezierLine(shoot, ready2)
+                            new BezierLine(x(shoot), x(ready2))
                     )
                     .setConstantHeadingInterpolation(ROT)
                     .build();
@@ -151,7 +151,7 @@ public class autoBlue12 extends OpMode {
             ready2_load2 = follower
                     .pathBuilder()
                     .addPath(
-                            new BezierLine(ready2,load2)
+                            new BezierLine(x(ready2),x(load2))
                     )
                     .setConstantHeadingInterpolation(ROT)
                     .build();
@@ -159,7 +159,7 @@ public class autoBlue12 extends OpMode {
             load2_shoot = follower
                     .pathBuilder()
                     .addPath(
-                            new BezierLine(load2,shoot)
+                            new BezierLine(x(load2),x(shoot))
                     )
                     .setConstantHeadingInterpolation(ROT)
                     .build();
@@ -167,7 +167,7 @@ public class autoBlue12 extends OpMode {
             shoot_ready3 = follower
                     .pathBuilder()
                     .addPath(
-                            new BezierLine(shoot,ready3)
+                            new BezierLine(x(shoot),x(ready3))
                     )
                     .setConstantHeadingInterpolation(ROT)
                     .build();
@@ -175,7 +175,7 @@ public class autoBlue12 extends OpMode {
             ready3_load3 = follower
                     .pathBuilder()
                     .addPath(
-                            new BezierLine(ready3,load3)
+                            new BezierLine(x(ready3),x(load3))
                     )
                     .setConstantHeadingInterpolation(ROT)
                     .build();
@@ -183,7 +183,7 @@ public class autoBlue12 extends OpMode {
             load3_shoot = follower
                     .pathBuilder()
                     .addPath(
-                            new BezierLine(load3,shoot)
+                            new BezierLine(x(load3),x(shoot))
                     )
                     .setConstantHeadingInterpolation(ROT)
                     .build();
@@ -191,7 +191,7 @@ public class autoBlue12 extends OpMode {
             shoot_end = follower
                     .pathBuilder()
                     .addPath(
-                            new BezierCurve(shoot, end)
+                            new BezierCurve(x(shoot), x(end))
                     )
                     .setConstantHeadingInterpolation(ROT)
                     .build();
@@ -206,15 +206,15 @@ public class autoBlue12 extends OpMode {
         switch(pathState){
             case 0:
                 //set turret angle to 45 degrees
-                robot.shooter.setFlywheelRPM(2600);
-                robot.shooter.turret.debugTargetAngle = Math.toRadians(40);
+                robot.shooter.setFlywheelRPM(2550);
+                robot.shooter.turret.debugTargetAngle = Math.toRadians(37);
                 follower.followPath(paths.start_shoot, true);
                 pathState++;
                 break;
             case 1:
-            case 5:
-            case 9:
-            case 13:
+            case 6:
+            case 10:
+            case 14:
                 if (!follower.isBusy() && robot.shooter.canShoot()){
                     robot.shoot();
                     pathState++;
@@ -229,7 +229,7 @@ public class autoBlue12 extends OpMode {
             case 3:
                 if (!follower.isBusy()){
                     robot.intake(true);
-                    follower.setMaxPower(0.4);
+                    follower.setMaxPower(0.45);
                     follower.followPath(paths.ready1_load1,true);
                     pathState++;
                 }
@@ -238,25 +238,32 @@ public class autoBlue12 extends OpMode {
                 if (!follower.isBusy()){
                     robot.intake(false);
                     follower.setMaxPower(SPEED);
-                    follower.followPath(paths.load1_shoot,true);
+                    follower.followPath(paths.load1_gate,true);
                     pathState++;
                 }
                 break;
-            case 6:
+            case 5:{
+                if (!follower.isBusy()){
+                    follower.followPath(paths.gate_shoot,true);
+                    pathState++;
+                }
+                break;
+            }
+            case 7:
                 if(!robot.shooter.shooting){
                     follower.followPath(paths.shoot_ready2,true);
                     pathState++;
                 }
                 break;
-            case 7:
+            case 8:
                 if (!follower.isBusy()){
                     robot.intake(true);
-                    follower.setMaxPower(0.4);
+                    follower.setMaxPower(0.45);
                     follower.followPath(paths.ready2_load2,true);
                     pathState++;
                 }
                 break;
-            case 8:
+            case 9:
                 if(!follower.isBusy()){
                     robot.intake(false);
                     follower.setMaxPower(SPEED);
@@ -264,22 +271,22 @@ public class autoBlue12 extends OpMode {
                     pathState++;
                 }
                 break;
-            case 10:
+            case 11:
                 if(!robot.shooter.shooting){
                     follower.followPath(paths.shoot_ready3,true);
                     pathState++;
                 }
                 break;
-            case 11:
+            case 12:
 
                 if(!follower.isBusy()){
                     robot.intake(true);
-                    follower.setMaxPower(0.4);
+                    follower.setMaxPower(0.45);
                     follower.followPath(paths.ready3_load3,true);
                     pathState++;
                 }
                 break;
-            case 12:
+            case 13:
                 if(!follower.isBusy()){
                     robot.intake(false);
                     follower.setMaxPower(SPEED);
@@ -287,7 +294,7 @@ public class autoBlue12 extends OpMode {
                     pathState++;
                 }
                 break;
-            case 14:
+            case 15:
                 if(!robot.shooter.shooting){
                     robot.shooter.offShooter();
                     follower.followPath(paths.shoot_end,true);
@@ -295,8 +302,8 @@ public class autoBlue12 extends OpMode {
                     timer.resetTimer();
                 }
                 break;
-            case 15:
-                if (timer.getElapsedTimeSeconds() > 1){
+            case 16:
+                if (timer.getElapsedTimeSeconds() > 0.5){
                     robot.shooter.turret.debugTargetAngle = 0;
                     pathState = -1;
                 }

@@ -71,7 +71,7 @@ public class Robot extends Assembly {
 
         if (shooter.turret.mode == Turret.TRACKING_MODE){
             if (shooter.atTargetFlywheelRPM()){
-                if (shooter.turret.isPointed()){
+                if (shooter.turret.isPointed() && shooter.turret.atTargetPosition()){
                     led.setPosition(GREEN);
                 }else{
                     led.setPosition(BLUE);
