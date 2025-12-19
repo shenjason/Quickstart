@@ -21,11 +21,13 @@ import org.opencv.core.Mat;
 public class Turret extends Assembly {
     public double P=2.5,I=0.002,D=0.25,F=0.03;
 
+    public final double K = 0.3;
+
     public PIDcontroller turretController;
     public boolean isInCamera;
     private double targetRotation;
     public double Ta;
-    private double Tx, TagEx;
+    private double Tx, TxRaw;
     private Limelight3A limelight;
 
     private DcMotor turretMotor;
@@ -71,28 +73,42 @@ public class Turret extends Assembly {
 
     @Override
     public void update() {
-
+        //Camera Data collection
         LLResult llResult = limelight.getLatestResult();
-        Pose cp = follower.getPose();
-        double angle = getAngle(cp.getX(),cp.getY(),targetPointX,TARGETY);
-        double robotAngle = cp.getHeading();
+
         isInCamera = limelightResultVaild(llResult);
 
-        if (isInCamera && (atTargetPosition() || Tx==0)) {
-            Ta = llResult.getTa();
-            TagEx = Math.abs(llResult.getTx());
-            if (TagEx >= 5) Tx = llResult.getTx();
-        }
-        if (!isInCamera) {
-            Ta = 0; TagEx = 0;
-            if (cameraTTimer.getElapsedTime() > 1000) Tx=0;
-        }else{
-            cameraTTimer.resetTimer();
+        if (isInCamera) {
+            Ta = llResult.getTa(); Tx = llResult.getTx();
+        }else {
+            Ta = 0; Tx = 0;
         }
 
-        double diffAngle = getDiff(angle,robotAngle);
-        targetRotation = diffAngle - Math.toRadians(Tx);
+        Pose cp = follower.getPose();
+
+        double X = cp.getX();
+        double Y = cp.getY();
+
         double currentRotation = (turretMotor.getCurrentPosition()/145.1d*0.16d*2d*Math.PI - offsetAngle);
+        double robotAngle = cp.getHeading();
+
+
+        double angle = getAngle(X,Y,targetPointX,TARGETY);
+
+
+        targetRotation = getDiff(angle,robotAngle);
+
+
+        if (atTargetPosition()){
+            if (Tx > Math.toRadians(2)){
+                double slope = Math.tan(angle - Math.toRadians(Tx));
+                double intercept = TARGETY - slope * targetPointX;
+
+                follower.setPose(closestPointOnLine(slope, intercept, X, Y, robotAngle));
+            }
+        }
+
+//        targetRotation -= Math.toRadians(Tx);
 
         double clamped_target_rot = targetRotation;
         if (Math.abs(targetRotation)>=Math.toRadians(70)) clamped_target_rot = Math.toRadians(70)*Math.signum(targetRotation);
@@ -109,7 +125,6 @@ public class Turret extends Assembly {
         debugAddData("Heading", Math.toDegrees(cp.getHeading()));
         debugAddData("globalTargetRotation", Math.toDegrees(angle));
         debugAddData("targetRotation",  Math.toDegrees(clamped_target_rot));
-        debugAddData("diff angle", diffAngle);
         debugAddData("currentPos", turretMotor.getCurrentPosition());
         debugAddData("current angle",Math.toDegrees(currentRotation));
         debugAddData("Tx", Tx);
@@ -117,7 +132,7 @@ public class Turret extends Assembly {
         debugAddData("Output", turretController.currentOutput);
 
 
-        debugAddData("isPointed",isPointed());
+        debugAddData("isPointed",atTargetPosition());
     }
 
     public LLResult limelightGetResult(int pipeline_index) {
@@ -145,7 +160,7 @@ public class Turret extends Assembly {
     }
 
     public boolean atTargetPosition(){
-        return Math.abs(turretController.getE()) <= Math.toRadians(1) && Math.abs(turretController.currentOutput) < 0.04;
+        return Math.abs(turretController.getE()) <= Math.toRadians(.5) && Math.abs(turretController.currentOutput) <= 0.01;
     }
 
     public static double getAngle(double x1, double y1, double x2, double y2) {
@@ -155,6 +170,13 @@ public class Turret extends Assembly {
         return ((angle1-angle2+Math.toRadians(180))%Math.toRadians(360)-Math.toRadians(180));
     }
     public boolean isPointed(){
-        return mode == IDLE_MODE || (TagEx <= 1.0 && isInCamera);
+        return mode == IDLE_MODE || (Math.abs(Tx) <= 1 && isInCamera);
+    }
+
+    public Pose closestPointOnLine(double slope, double intercept, double x0, double y0, double heading){
+        double x = (x0 + slope * (y0 - intercept)) / (1 + slope * slope);
+        double y = slope * x + intercept;
+
+        return new Pose(x, y, heading);
     }
 }

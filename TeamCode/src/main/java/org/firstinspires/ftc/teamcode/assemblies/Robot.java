@@ -42,7 +42,6 @@ public class Robot extends Assembly {
 
     public void tracking(){
         shooter.trackingMode();
-        shooter.autoAdjustShooterParameters();
     }
     public void intake(boolean state){
         if (shooter.shooting) return;

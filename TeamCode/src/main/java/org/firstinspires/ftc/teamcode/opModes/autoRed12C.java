@@ -12,6 +12,6 @@ public class autoRed12C extends autoBlue12C{
     @Override
     public void setSIDE(){
         SIDE = Assembly.SIDE_RED;
-        Paths.ROT = 0;
+        ROT = 0;
     }
 }

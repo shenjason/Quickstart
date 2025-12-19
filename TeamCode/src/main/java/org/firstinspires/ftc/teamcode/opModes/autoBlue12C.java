@@ -12,6 +12,7 @@ import com.pedropathing.util.Timer;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 
+import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.assemblies.Robot;
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 import org.firstinspires.ftc.teamcode.util.Assembly;
@@ -20,7 +21,8 @@ import org.firstinspires.ftc.teamcode.util.Assembly;
 @Configurable // Panels
 public class autoBlue12C extends OpMode {
 
-    public static boolean SIDE = Assembly.SIDE_BLUE;
+    public boolean SIDE = Assembly.SIDE_BLUE;
+    public double ROT = Math.toRadians(180);
     private TelemetryManager panelsTelemetry; // Panels Telemetry instance
     public Follower follower; // Pedro Pathing follower instance
     private int pathState; // Current autonomous path state (state machine)
@@ -41,12 +43,12 @@ public class autoBlue12C extends OpMode {
 
         setSIDE();
 
-        robot = new Robot(hardwareMap, telemetry,follower,true, SIDE);
+        robot = new Robot(hardwareMap, telemetry,follower,false, SIDE);
 
         follower.setMaxPower(SPEED);
         follower.setMaxPowerScaling(SPEED);
 
-        paths = new Paths(follower); // Build paths
+        paths = new Paths(follower, SIDE, ROT); // Build paths
 
         follower.setStartingPose(paths.x(paths.startPose));
         robot.intake(false);
@@ -56,6 +58,9 @@ public class autoBlue12C extends OpMode {
 
         pathState = 0;
         timer = new Timer();
+        telemetry.addData("pos x",paths.start_shoot.endPoint().getX());
+        telemetry.addData("pos y", paths.start_shoot.endPoint().getY());
+        telemetry.update();
     }
 
     @Override
@@ -65,18 +70,18 @@ public class autoBlue12C extends OpMode {
         pathState = autonomousPathUpdate(); // Update autonomous state machine
 
         // Log values to Panels and Driver Station
-        panelsTelemetry.debug("Path State", pathState);
-        panelsTelemetry.debug("X", follower.getPose().getX());
-        panelsTelemetry.debug("Y", follower.getPose().getY());
-        panelsTelemetry.debug("Heading", follower.getPose().getHeading());
-
-        panelsTelemetry.update();
-        telemetry.update();
+//        panelsTelemetry.debug("Path State", pathState);
+//        panelsTelemetry.debug("X", follower.getPose().getX());
+//        panelsTelemetry.debug("Y", follower.getPose().getY());
+//        panelsTelemetry.debug("Heading", follower.getPose().getHeading());
+//
+//        panelsTelemetry.update();
+//        telemetry.update();
     }
 
     public static class Paths {
 
-        public static double ROT = Math.toRadians(180);
+        public boolean SIDE = Assembly.SIDE_BLUE;
         public Pose startPose = (new Pose(26.200, 130.000, Math.toRadians(52)));
         public Pose shoot = (new Pose(42,102, Math.toRadians(180)));
         public Pose ready1 = (new Pose(46.0,84.0,  Math.toRadians(180)));
@@ -91,13 +96,16 @@ public class autoBlue12C extends OpMode {
 
         public PathChain start_shoot, shoot_ready1, ready1_load1, load1_shoot, shoot_ready2,ready2_load2, load2_shoot, shoot_ready3, ready3_load3, load3_shoot, shoot_end, load1_gate, gate_shoot;
 
-        public Paths(Follower follower) {
+        public Paths(Follower follower, boolean SIDE, double ROT) {
+            this.SIDE = SIDE;
+
+
             start_shoot = follower
                     .pathBuilder()
                     .addPath(
                             new BezierLine(x(startPose), x(shoot))
                     )
-                    .setLinearHeadingInterpolation(SIDE ? startPose.getHeading() : 128, ROT)
+                    .setLinearHeadingInterpolation(SIDE ? startPose.getHeading() : Math.toRadians(180)-startPose.getHeading(), ROT)
                     .build();
 
             shoot_ready1 = follower

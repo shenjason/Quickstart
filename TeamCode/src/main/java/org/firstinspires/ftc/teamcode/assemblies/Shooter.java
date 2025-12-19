@@ -61,10 +61,10 @@ public class Shooter extends Assembly {
 
 
     public void autoAdjustShooterParameters(){
-        double RPM = Math.round(341.8766 * Math.pow(TagSize, -0.191797)) * 10;
+        double RPM = Math.round(338.8766 * Math.pow(TagSize, -0.191797)) * 10;
 
         if (shooting) return;
-        if (!turret.isInCamera) RPM = 2800;
+        if (!turret.isInCamera) RPM = 3000;
         if (RPM > 3800) RPM = 3800;
 
         setFlywheelRPM(RPM);
@@ -94,6 +94,7 @@ public class Shooter extends Assembly {
 
 
         closeGate();
+        setBootkickerState(false);
     }
 
     void calcFlyWheelRPM(){
@@ -101,7 +102,6 @@ public class Shooter extends Assembly {
 
 
         flywheelPID.p = flywheelP; flywheelPID.i = flyWheelI; flywheelPID.d = flyWheelD; flywheelPID.f = flyWheelF;
-
 
         flywheelRPM = ((flywheelMotor.getCurrentPosition() - prevFlyWheelPos) / 28d)
                 / (flywheelRPMSampleTimer.getElapsedTime() / 60000d);
@@ -117,7 +117,7 @@ public class Shooter extends Assembly {
     }
 
     public boolean atTargetFlywheelRPM(){
-        return Math.abs(targetFlyWheelRPM - flywheelRPM) < 100;
+        return Math.abs(targetFlyWheelRPM - flywheelRPM) < 130;
     }
 
     public boolean canShoot(){
@@ -156,13 +156,9 @@ public class Shooter extends Assembly {
     }
 
 
-    public int turretMode(){
-        return turret.mode;
-    }
-
-
     @Override
     public void update() {
+        if (turret.mode == Turret.TRACKING_MODE && !shooting) autoAdjustShooterParameters();
         calcFlyWheelRPM();
         debugAddLine("Shooter");
         debugAddData("flyWheelRPM", flywheelRPM);
