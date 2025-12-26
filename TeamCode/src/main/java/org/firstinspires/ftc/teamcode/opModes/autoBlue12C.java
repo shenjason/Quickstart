@@ -29,7 +29,7 @@ public class autoBlue12C extends OpMode {
     protected Paths paths; // Paths defined in the Paths class
 
     public Robot robot;
-    public static double SPEED = 0.8;
+    public static double SPEED = 0.9;
     Timer timer;
 
     public void setSIDE(){}
@@ -50,7 +50,7 @@ public class autoBlue12C extends OpMode {
 
         paths = new Paths(follower, SIDE, ROT); // Build paths
 
-        follower.setStartingPose(paths.x(paths.startPose));
+        follower.setStartingPose(SIDE ? (paths.startPose) : new Pose(144-paths.startPose.getX(), paths.startPose.getY(), Math.toRadians(128)));
         robot.intake(false);
 
 
@@ -105,7 +105,7 @@ public class autoBlue12C extends OpMode {
                     .addPath(
                             new BezierLine(x(startPose), x(shoot))
                     )
-                    .setLinearHeadingInterpolation(SIDE ? startPose.getHeading() : Math.toRadians(180)-startPose.getHeading(), ROT)
+                    .setLinearHeadingInterpolation(SIDE ? startPose.getHeading() : Math.toRadians(128), ROT)
                     .build();
 
             shoot_ready1 = follower
@@ -206,7 +206,7 @@ public class autoBlue12C extends OpMode {
         }
 
         public Pose x(Pose p){
-            return (SIDE) ? p : new Pose(144-p.getX(), p.getY(), p.getHeading() - Math.toRadians(180));
+            return (SIDE) ? p : new Pose(144 - p.getX(), p.getY(), p.getHeading() - Math.toRadians(180));
         }
     }
 
@@ -214,8 +214,8 @@ public class autoBlue12C extends OpMode {
         switch(pathState){
             case 0:
                 //set turret angle to 45 degrees
-                robot.shooter.setFlywheelRPM(2550);
-                robot.shooter.turret.debugTargetAngle = Math.toRadians(37);
+                robot.shooter.setFlywheelRPM(2650);
+                robot.shooter.turret.debugTargetAngle = Math.toRadians(37) * ((SIDE) ? 1 : -1);
                 follower.followPath(paths.start_shoot, true);
                 pathState++;
                 break;

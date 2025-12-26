@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode.assemblies;
 
 import com.pedropathing.follower.Follower;
+import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DistanceSensor;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.LED;
@@ -19,6 +20,7 @@ public class Robot extends Assembly {
     public Shooter shooter;
 
     public Servo led;
+    public CRServo leftIntake, rightIntake;
     public DistanceSensor distanceSensor;
 
     public Robot(HardwareMap _hardwareMap, Telemetry _t, Follower f, boolean _debug, boolean _side) {
@@ -44,10 +46,16 @@ public class Robot extends Assembly {
         shooter.trackingMode();
     }
     public void intake(boolean state){
+        if (!state){
+            leftIntake.setPower(0);
+            rightIntake.setPower(0);
+        }
         if (shooter.shooting) return;
         if (state){
             shooter.closeGate();
             shooter.setIntakeMotorPower(-1);
+            leftIntake.setPower(-1);
+            rightIntake.setPower(1);
             return;
         }
         shooter.setIntakeMotorPower(0);
@@ -59,7 +67,13 @@ public class Robot extends Assembly {
     public void hardwareInit() {
         led = hardwareMap.get(Servo.class, "light");
         distanceSensor = hardwareMap.get(DistanceSensor.class, "distance");
+        
+        leftIntake = hardwareMap.get(CRServo.class, "leftIntake");
+        rightIntake = hardwareMap.get(CRServo.class, "rightIntake");
+
         led.setPosition(0);
+        leftIntake.setPower(0);
+        rightIntake.setPower(0);
     }
 
 
@@ -79,7 +93,7 @@ public class Robot extends Assembly {
                 led.setPosition(RED);
             }
         }else{
-            if (distanceSensor.getDistance(DistanceUnit.MM) < 80){
+            if (distanceSensor.getDistance(DistanceUnit.MM) < 90){
                 led.setPosition(GREEN);
             }else{
                 led.setPosition(RED);

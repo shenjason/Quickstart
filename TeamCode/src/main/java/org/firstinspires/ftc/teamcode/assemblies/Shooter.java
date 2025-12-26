@@ -18,7 +18,7 @@ import org.firstinspires.ftc.teamcode.util.PIDcontroller;
 import org.firstinspires.ftc.teamcode.util.Sequencer;
 
 public class Shooter extends Assembly {
-    public double flywheelP = 7, flyWheelI = 0.01, flyWheelD = 0, flyWheelF = 0.0004;
+    public double flywheelP = 3, flyWheelI = 0.005, flyWheelD = 0, flyWheelF = 0.0004;
     final int SAMPLE_T = 50;
 
     final double OPEN_GATE_POS = 0.85, CLOSE_GATE_POS = 0.95;
@@ -55,13 +55,13 @@ public class Shooter extends Assembly {
             () -> shooting = false,
             this::closeGate
     ), List.of(
-            0d, 0d, 0d, 1d, 0.3d, 0.5d, 0.5d
+            0d, 0d, 0d, 0.9d, 0.3d, 0.5d, 0.5d
     ));
 
 
 
     public void autoAdjustShooterParameters(){
-        double RPM = Math.round(338.8766 * Math.pow(TagSize, -0.191797)) * 10;
+        double RPM = Math.round(330.8766 * Math.pow(TagSize, -0.191797)) * 10;
 
         if (shooting) return;
         if (!turret.isInCamera) RPM = 3000;
@@ -117,7 +117,7 @@ public class Shooter extends Assembly {
     }
 
     public boolean atTargetFlywheelRPM(){
-        return Math.abs(targetFlyWheelRPM - flywheelRPM) < 130;
+        return Math.abs(targetFlyWheelRPM - flywheelRPM) < 150;
     }
 
     public boolean canShoot(){

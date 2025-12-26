@@ -8,20 +8,20 @@ import com.qualcomm.hardware.limelightvision.Limelight3A;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.IMU;
+import com.qualcomm.robotcore.hardware.TouchSensor;
 
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.navigation.Pose3D;
 import org.firstinspires.ftc.robotcore.external.navigation.YawPitchRollAngles;
+import org.firstinspires.ftc.teamcode.util.ActionPress;
 import org.firstinspires.ftc.teamcode.util.Assembly;
 import org.firstinspires.ftc.teamcode.util.PIDcontroller;
 import org.opencv.core.Mat;
 
 
 public class Turret extends Assembly {
-    public double P=2.5,I=0.002,D=0.25,F=0.03;
-
-    public final double K = 0.3;
+    public double P=0.8,I=0.0,D=0.04,F=0.05;
 
     public PIDcontroller turretController;
     public boolean isInCamera;
@@ -35,7 +35,7 @@ public class Turret extends Assembly {
 
     private double targetPointX;
 
-    private final double TARGETBLUEX=12, TARGETY=132, TARGETREDX=144-TARGETBLUEX;
+    private final double TARGETBLUEX=16, TARGETY=131, TARGETREDX=144-TARGETBLUEX;
 
     public final static int GPP = 0, PGP = 1, PPG = 2, BLUE_TARGET_LINE = 3, RED_TARGET_LINE = 4, TRACKING_MODE = 0, IDLE_MODE = 1;
     public int mode = IDLE_MODE;
@@ -43,7 +43,11 @@ public class Turret extends Assembly {
 
     public double debugTargetAngle = 0;
 
+    public TouchSensor magneticSensor;
+
     Timer cameraTTimer;
+
+    ActionPress magneticSwitchReset;
 
 
     public Turret(HardwareMap _hardwareMap, Telemetry _t, Follower f, boolean _debug, boolean _side) {
@@ -55,24 +59,30 @@ public class Turret extends Assembly {
     public void hardwareInit() {
         limelight = hardwareMap.get(Limelight3A.class, "limelight");
         turretMotor = hardwareMap.get(DcMotor.class, "turret");
+        magneticSensor = hardwareMap.get(TouchSensor.class, "magneticSensor");
 
         turretMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         turretMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
         limelight.setPollRateHz(30);
 
-        turretController = new PIDcontroller(P, I, D, F, -0.3, 0.3);
+        turretController = new PIDcontroller(P, I, D, F, -0.6, 0.6);
 
         limelight.pipelineSwitch((side) ? BLUE_TARGET_LINE : RED_TARGET_LINE);
         targetPointX = (side) ? TARGETBLUEX : TARGETREDX;
         limelight.start();
 
         cameraTTimer = new Timer();
+
+        magneticSwitchReset = new ActionPress(this::resetEncoder);
     }
 
 
     @Override
     public void update() {
+//        magneticSwitchReset.update(magneticSensor.isPressed());
+
+
         //Camera Data collection
         LLResult llResult = limelight.getLatestResult();
 
@@ -100,18 +110,20 @@ public class Turret extends Assembly {
 
 
         if (atTargetPosition()){
-            if (Tx > Math.toRadians(2)){
+            if (Math.abs(Tx) > Math.toRadians(2) && Math.abs(Tx) < Math.toRadians(20)){
                 double slope = Math.tan(angle - Math.toRadians(Tx));
                 double intercept = TARGETY - slope * targetPointX;
 
-                follower.setPose(closestPointOnLine(slope, intercept, X, Y, robotAngle));
+
+                Pose correctionPose = closestPointOnLine(slope, intercept, X, Y, robotAngle);
+
+                if (correctionPose.getX() < 144 && correctionPose.getX() > 0 && correctionPose.getY() < 144 && correctionPose.getY() > 0) follower.setPose(correctionPose);
             }
         }
 
-//        targetRotation -= Math.toRadians(Tx);
 
         double clamped_target_rot = targetRotation;
-        if (Math.abs(targetRotation)>=Math.toRadians(70)) clamped_target_rot = Math.toRadians(70)*Math.signum(targetRotation);
+        if (Math.abs(targetRotation)>=Math.toRadians(75)) clamped_target_rot = Math.toRadians(75)*Math.signum(targetRotation);
 
         turretController.p = P; turretController.i = I; turretController.d = D; turretController.f = F;
 
@@ -133,6 +145,7 @@ public class Turret extends Assembly {
 
 
         debugAddData("isPointed",atTargetPosition());
+
     }
 
     public LLResult limelightGetResult(int pipeline_index) {
@@ -160,7 +173,7 @@ public class Turret extends Assembly {
     }
 
     public boolean atTargetPosition(){
-        return Math.abs(turretController.getE()) <= Math.toRadians(.5) && Math.abs(turretController.currentOutput) <= 0.01;
+        return Math.abs(turretController.getE()) <= Math.toRadians(2) && Math.abs(turretController.currentOutput) <= 0.05;
     }
 
     public static double getAngle(double x1, double y1, double x2, double y2) {
@@ -178,5 +191,11 @@ public class Turret extends Assembly {
         double y = slope * x + intercept;
 
         return new Pose(x, y, heading);
+    }
+
+
+    public void resetEncoder(){
+        turretMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        turretMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
     }
 }
